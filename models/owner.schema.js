@@ -9,24 +9,36 @@ const ImageSchema = new Schema({
   filename: String,
 });
 
-const OwnerSchema = new Schema({
-  username: String,
-  password: String,
-  business: String,
-  email: {
-    type: String,
-    required: true,
-    unique: true,
+const OwnerSchema = new Schema(
+  {
+    username: String,
+    password: String,
+    business: String,
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    images: [ImageSchema],
+    legal: [ImageSchema],
+    isVerified: { type: String, default: "false" },
+    Driver: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Driver",
+        autopopulate: true,
+      },
+    ],
   },
-  phone: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  images: [ImageSchema],
-  legal: [ImageSchema],
-  isVerified: { type: String, default: "false" },
-});
+  { timestamps: true }
+);
+
+OwnerSchema.plugin(require("mongoose-autopopulate"));
 
 OwnerSchema.methods.generateAuthToken = function () {
   const token = jwt.sign({ _id: this._id }, process.env.JWTSECRETKEY, {

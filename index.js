@@ -9,7 +9,9 @@ const mongoose = require("mongoose");
 const ownerRoutes = require("./routes/owner");
 const driverRoutes = require("./routes/driver");
 const adminRoutes = require("./routes/admin");
+const apiRoutes = require("./routes/api");
 const cors = require("cors");
+const session = require("express-session");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -19,10 +21,23 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const sessionConfig = {
+  secret: "thisshouldbeabettersecret!",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  },
+};
+
+app.use(session(sessionConfig));
+
+//ROUTES
+
 app.get("/", (req, res) => {
-  const data = [];
-  res.render("map", { data });
-  console.log(data);
+  res.render("map");
 });
 app.get("/test", (req, res) => {
   res.render("getMap");
@@ -30,11 +45,15 @@ app.get("/test", (req, res) => {
 app.use("/api/v1/owner", ownerRoutes);
 app.use("/api/v1/driver", driverRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/himraahi/", apiRoutes);
+
+//ROUTE TO HANDLE RANDOM URLS
 
 app.all("*", (req, res, next) => {
   next(res.render("error"));
 });
 
+// SERVER CONNECTION
 mongoose
   .connect(process.env.MONGODB_URI)
   .then((result) => {

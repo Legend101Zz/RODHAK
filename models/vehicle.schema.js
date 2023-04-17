@@ -1,23 +1,24 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const VehicleSchema = new Schema({
+  name: String,
+  vehichleNum: String,
 
-const OwnerSchema = new Schema({
-    name: String,
-    password: String,
-    business: String,
-    email: {
-      type: String,
-      required: true,
-      unique: true,
+  Trip: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Trip",
+      autopopulate: true,
     },
-    phone: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    images: [ImageSchema],
-    legal: [ImageSchema],
-    isVerified: { type: String, default: "false" },
-  });
-  
+  ],
+  Owner: {
+    type: Schema.Types.ObjectId,
+    ref: "Owner",
+    autopopulate: true,
+  },
+  isVerified: { type: String, default: "false" },
+});
+VehicleSchema.plugin(require("mongoose-autopopulate"));
+
+module.exports = mongoose.model("Vehicle", VehicleSchema);

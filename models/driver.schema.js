@@ -5,22 +5,40 @@ const ImageSchema = new Schema({
   filename: String,
 });
 
-const driverSchema = new Schema({
-  name: String,
-  password: String,
-  email: {
-    type: String,
-    required: true,
-    unique: true,
+const driverSchema = new Schema(
+  {
+    name: String,
+    password: String,
+    username: String,
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    images: [ImageSchema],
+    legal: [ImageSchema],
+    isVerified: { type: String, default: "false" },
+    Trip: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Trip",
+        autopopulate: true,
+      },
+    ],
+    Owner: {
+      type: Schema.Types.ObjectId,
+      ref: "Owner",
+
+      autopopulate: true,
+    },
   },
-  phone: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  images: [ImageSchema],
-  legal: [ImageSchema],
-  isVerified: { type: String, default: "false" },
-});
+  { timestamps: true }
+);
+driverSchema.plugin(require("mongoose-autopopulate"));
 
 module.exports = mongoose.model("Driver", driverSchema);

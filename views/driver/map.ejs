@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.css"
+      type="text/css"
+    />
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js"></script>
+    <title>Rodhak</title>
+    <style>
+      body {
+        margin: 0;
+      }
+
+      #map {
+        height: 100vh;
+        width: 100vw;
+      }
+
+      #speed {
+        height: 20px;
+        width: 20px;
+        color: black;
+      }
+      .marker {
+        background-image: url("/rodhak.jpeg");
+        background-size: cover;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="speed"></div>
+    <script>
+      mapboxgl.accessToken = "<%-process.env.MAP_BOX%>";
+
+      navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
+        enableHighAccuracy: true,
+      });
+
+      navigator.geolocation.watchPosition(successApi, errorApi, {
+        enableHighAccuracy: true,
+      });
+
+      // fetch("http://localhost:3000/himraahi/coordinate", {
+      //   method: "POST", // Specify the HTTP method
+      //   body: new FormData({ hello: "world" })
+      //     .then((res) => {
+      //       console.log(res);
+      //     })
+      //     .catch((err) => {
+      //       console.log(err);
+      //     }),
+      // });
+
+      // Example POST method implementation:
+      // async function postData(url = "", data = {}) {
+      //   // Default options are marked with *
+      //   const response = await fetch(url, {
+      //     method: "POST", // *GET, POST, PUT, DELETE, etc.
+      //     mode: "cors", // no-cors, *cors, same-origin
+      //     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+      //     credentials: "same-origin", // include, *same-origin, omit
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       // 'Content-Type': 'application/x-www-form-urlencoded',
+      //     },
+      //     redirect: "follow", // manual, *follow, error
+      //     referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+      //     body: JSON.stringify(data), // body data type must match "Content-Type" header
+      //   });
+      //   return response.json(); // parses JSON response into native JavaScript objects
+      // }
+
+      // postData("http://localhost:3000/himraahi/coordinate", {
+      //   color: "red",
+      //   value: "#f00",
+      // }).then((data) => {
+      //   console.log(data); // JSON data parsed by `data.json()` call
+      // });
+
+      async function postJSON(data) {
+        try {
+          const response = await fetch(
+            "http://localhost:3000/himraahi/coordinate",
+            {
+              method: "POST", // or 'PUT'
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            }
+          );
+
+          const result = await response.json();
+          console.log("Success:", result);
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      }
+
+      function successApi(position) {
+        console.log(position.coords);
+        const long = position.coords.longitude;
+        const lat = position.coords.latitude;
+        const speed = position.coords.speed;
+        const data = { long, lat, speed };
+        const pointer = [long, lat];
+        console.log(data);
+
+        postJSON({ data: data });
+      }
+
+      function errorApi(err) {
+        console.log(err);
+      }
+
+      function successLocation(position) {
+        console.log(position);
+        setupMap([position.coords.longitude, position.coords.latitude]);
+        const exact = document.getElementById("speed");
+        exact.innerHTML = position.coords.heading;
+      }
+
+      function errorLocation() {
+        setupMap([77.170973, 31.104153]);
+        const exact = document.getElementById("speed");
+        exact.innerHTML = "0";
+      }
+
+      function setupMap(center) {
+        const map = new mapboxgl.Map({
+          container: "map",
+          style: "mapbox://styles/mapbox/navigation-night-v1",
+          center: center,
+          zoom: 15,
+        });
+
+        map.addControl(
+          new MapboxDirections({
+            accessToken: mapboxgl.accessToken,
+          }),
+          "top-left"
+        );
+        const nav = new mapboxgl.NavigationControl();
+        map.addControl(nav);
+
+        const geojson = {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: [76.5242236, 31.7108516],
+              },
+              properties: {
+                title: "Rodhak",
+                description: "Your Current Location",
+              },
+            },
+          ],
+        };
+        // add markers to map
+        for (const feature of geojson.features) {
+          // create a HTML element for each feature
+          const el = document.createElement("div");
+          el.className = "marker";
+
+          // make a marker for each feature and add to the map
+          new mapboxgl.Marker(el)
+            .setLngLat(feature.geometry.coordinates)
+            .addTo(map);
+        }
+
+        // var directions = new MapboxDirections({
+        //   accessToken: mapboxgl.accessToken,
+        // });
+        // console.log(map.addControl());
+        // map.addControl(directions, "top-left");
+        // console.log(map.addControl);
+        // map.on("load", async () => {
+        //   // Get the initial location of the International Space Station (ISS).
+        //   const geojson = await getLocation();
+        //   // Add the ISS location as a source.
+        //   map.addSource("iss", {
+        //     type: "geojson",
+        //     data: geojson,
+        //   });
+        //   // Add the rocket symbol layer to the map.
+        //   map.addLayer({
+        //     id: "iss",
+        //     type: "symbol",
+        //     source: "iss",
+        //     layout: {
+        //       // This icon is a part of the Mapbox Streets style.
+        //       // To view all images available in a Mapbox style, open
+        //       // the style in Mapbox Studio and click the "Images" tab.
+        //       // To add a new image to the style at runtime see
+        //       // https://docs.mapbox.com/mapbox-gl-js/example/add-image/
+        //       "icon-image": "/rodhak.jpeg",
+        //     },
+        //   });
+
+        //   // Update the source from the API every 2 seconds.
+        //   const updateSource = setInterval(async () => {
+        //     const geojson = await getLocation(updateSource);
+        //     map.getSource("iss").setData(geojson);
+        //   }, 2000);
+
+        //   async function getLocation(updateSource) {
+        //     // Make a GET request to the API and return the location of the ISS.
+        //     try {
+        //       const response = await fetch(
+        //         "https://api.wheretheiss.at/v1/satellites/25544",
+        //         { method: "GET" }
+        //       );
+        //       const { latitude, longitude } = await response.json();
+        //       // Fly the map to the location.
+        //       map.flyTo({
+        //         center: [longitude, latitude],
+        //         speed: 0.5,
+        //       });
+        //       // Return the location of the ISS as GeoJSON.
+        //       return {
+        //         type: "FeatureCollection",
+        //         features: [
+        //           {
+        //             type: "Feature",
+        //             geometry: {
+        //               type: "Point",
+        //               coordinates: [longitude, latitude],
+        //             },
+        //           },
+        //         ],
+        //       };
+        //     } catch (err) {
+        //       // If the updateSource interval is defined, clear the interval to stop updating the source.
+        //       if (updateSource) clearInterval(updateSource);
+        //       throw new Error(err);
+        //     }
+        //   }
+        // });
+      }
+    </script>
+  </body>
+</html>

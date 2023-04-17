@@ -1,0 +1,34 @@
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
+const TripSchema = new Schema({
+  isFinished: { type: Boolean, default: false },
+  isPublic: { type: Boolean, default: false },
+  Driver: {
+    type: Schema.Types.ObjectId,
+    ref: "Driver",
+
+    autopopulate: true,
+  },
+  // Vehicle: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: "Vehicle",
+
+  //   autopopulate: true,
+  // },
+
+  currentCoordinates: {
+    type: [Number],
+  },
+
+  coordinateStart: {
+    type: [Number],
+  },
+  coordinateEnd: {
+    type: [Number],
+  },
+});
+
+TripSchema.plugin(require("mongoose-autopopulate"));
+
+module.exports = mongoose.model("Trip", TripSchema);

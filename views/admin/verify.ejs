@@ -198,15 +198,17 @@
           <div class="projects-section-line">
             <div class="projects-status">
               <div class="item-status">
-                <span class="status-number">45</span>
+                <span class="status-number"><%= owners.length%></span>
                 <span class="status-type">Owners Pending</span>
               </div>
               <div class="item-status">
-                <span class="status-number">24</span>
+                <span class="status-number"><%= drivers.length%></span>
                 <span class="status-type">Drivers Pending</span>
               </div>
               <div class="item-status">
-                <span class="status-number">69</span>
+                <span class="status-number"
+                  ><%=owners.length + drivers.length%></span
+                >
                 <span class="status-type">Total Pending</span>
               </div>
             </div>
@@ -253,11 +255,14 @@
               </button>
             </div>
           </div>
+          Owners
           <div class="project-boxes jsGridView">
+            <% for(let owner of owners) { if(owner.isVerified==="false") {%>
+
             <div class="project-box-wrapper">
               <div class="project-box" style="background-color: #fee4cb">
                 <div class="project-box-header">
-                  <span>December 10, 2020</span>
+                  <span><%= owner.createdAt %></span>
                   <div class="more-wrapper">
                     <button class="project-btn-more">
                       <svg
@@ -280,57 +285,61 @@
                   </div>
                 </div>
                 <div class="project-box-content-header">
-                  <p class="box-content-header">Web Designing</p>
-                  <p class="box-content-subheader">Prototyping</p>
+                  <p class="box-content-header"><%= owner.username %></p>
+                  <p class="box-content-subheader"><%= owner.business %></p>
                 </div>
                 <div class="box-progress-wrapper">
-                  <p class="box-progress-header">Progress</p>
+                  <p class="box-progress-header"><%=owner.phone%></p>
                   <div class="box-progress-bar">
                     <span
                       class="box-progress"
                       style="width: 60%; background-color: #ff942e"
                     ></span>
                   </div>
-                  <p class="box-progress-percentage">60%</p>
+                  <p class="box-progress-percentage"><%=owner.email%></p>
                 </div>
                 <div class="project-box-footer">
                   <div class="participants">
-                    <img
-                      src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=2550&q=80"
-                      alt="participant"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MTB8fG1hbnxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60"
-                      alt="participant"
-                    />
-                    <button class="add-participant" style="color: #ff942e">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="3"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="feather feather-plus"
-                      >
-                        <path d="M12 5v14M5 12h14" />
-                      </svg>
-                    </button>
+                    <img src="<%=owner.images[0].url%>" alt="participant" />
+                    <img src="<%=owner.legal[0].url%>" alt="participant" />
+                    <a href="/api/v1/admin/verifyOwner/<%=owner._id%>">
+                      <button class="add-participant" style="color: #ff942e">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="feather feather-plus"
+                        >
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                      </button>
+                    </a>
                   </div>
                   <div class="days-left" style="color: #ff942e">
-                    2 Days Left
+                    <%=owner.isVerified%>
                   </div>
                 </div>
               </div>
             </div>
+            <% }}%>
+
+            <br />
+            <br />
+            <br />
+            <hr />
+            Drivers <% for(let driver of drivers) {
+            if(driver.isVerified==="false") {%>
 
             <div class="project-box-wrapper">
-              <div class="project-box" style="background-color: #d5deff">
+              <div class="project-box" style="background-color: #fee4cb">
                 <div class="project-box-header">
-                  <span>December 10, 2020</span>
+                  <span><%=driver.email%></span>
                   <div class="more-wrapper">
                     <button class="project-btn-more">
                       <svg
@@ -353,52 +362,49 @@
                   </div>
                 </div>
                 <div class="project-box-content-header">
-                  <p class="box-content-header">Web Designing</p>
-                  <p class="box-content-subheader">Prototyping</p>
+                  <p class="box-content-header"><%=driver.username%></p>
+                  <p class="box-content-subheader"><%=driver.phone%></p>
                 </div>
                 <div class="box-progress-wrapper">
-                  <p class="box-progress-header">Progress</p>
+                  <p class="box-progress-header"><%=driver.phone%></p>
                   <div class="box-progress-bar">
                     <span
                       class="box-progress"
-                      style="width: 40%; background-color: #4067f9"
+                      style="width: 60%; background-color: #ff942e"
                     ></span>
                   </div>
-                  <p class="box-progress-percentage">40%</p>
+                  <p class="box-progress-percentage"><%=driver.email%></p>
                 </div>
                 <div class="project-box-footer">
                   <div class="participants">
-                    <img
-                      src="https://images.unsplash.com/photo-1600486913747-55e5470d6f40?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=2550&q=80"
-                      alt="participant"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1583195764036-6dc248ac07d9?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=2555&q=80"
-                      alt="participant"
-                    />
-                    <button class="add-participant" style="color: #4067f9">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="3"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="feather feather-plus"
-                      >
-                        <path d="M12 5v14M5 12h14" />
-                      </svg>
-                    </button>
+                    <img src="<%=driver.images[0].url%>" alt="participant" />
+                    <img src="<%=driver.legal[0].url%>" alt="participant" />
+                    <a href="/api/v1/admin/verifyDriver/<%=driver._id%>">
+                      <button class="add-participant" style="color: #ff942e">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="feather feather-plus"
+                        >
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                      </button>
+                    </a>
                   </div>
-                  <div class="days-left" style="color: #4067f9">
-                    2 Days Left
+                  <div class="days-left" style="color: #ff942e">
+                    <%=driver.isVerified%>
                   </div>
                 </div>
               </div>
             </div>
+            <% }}%>
           </div>
         </div>
         <div class="messages-section">

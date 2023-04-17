@@ -1,0 +1,255 @@
+html,
+body {
+  height: 100%;
+  background: #1f2b49;
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin: 50px;
+  background: url("/rodhak.jpeg") no-repeat center center;
+  background-size: cover;
+  position: relative;
+  opacity: 0;
+}
+
+.avatar::before {
+  font-size: 1em;
+  position: absolute;
+  top: 25%;
+  right: -100%;
+  content: "Rodhak.";
+}
+
+#container {
+  max-width: 380px;
+  height: 580px;
+  margin: 30px auto;
+  position: relative;
+  box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3);
+  background: #171e33;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  -webkit-transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
+  transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.content nav {
+  position: absolute;
+  right: -9999px;
+  -webkit-transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
+  transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
+  height: 100%;
+  background: #171e33;
+  box-shadow: -5px 0 5px -5px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.content nav a {
+  display: block;
+  text-decoration: none;
+  color: white;
+  text-transform: uppercase;
+}
+
+.content nav a:not(.switch) {
+  padding: 15px 80px 0 30px;
+}
+
+nav a.switch {
+  background: #646e9f;
+  position: absolute;
+  top: 15%;
+  right: 15%;
+  padding: 15px 20px;
+  border-radius: 3px;
+  box-shadow: 0 2px 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.content form {
+  width: 80%;
+  margin: auto;
+}
+
+.content form input {
+  width: 100%;
+  display: block;
+  margin: 20px auto 0;
+  line-height: 1.3;
+}
+
+.content form input[type="text"] {
+  background: none;
+  border: none;
+  border-bottom: 2px solid white;
+}
+
+label.button,
+.content {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #ff4081;
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 0.65em;
+}
+
+label.button {
+  z-index: 100;
+  line-height: initial;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+  /*h v b s*/
+  font-size: 2em;
+}
+
+label.button:hover {
+  cursor: pointer;
+}
+
+label.button::after {
+  content: ":::";
+  position: absolute;
+  color: white;
+  font-size: 0.8em;
+  left: 50%;
+  transform: translateX(-50%);
+  line-height: 1.8;
+  top: 0;
+}
+
+input#toggle {
+  position: absolute;
+  left: -9999px;
+  text-indent: -9999px;
+}
+
+input#toggle:checked ~ label.button::after {
+  content: ":::";
+}
+
+input#toggle:checked ~ .content {
+  background: url("/rodhak.jpeg") no-repeat center center;
+  width: 100%;
+  height: 100%;
+  bottom: 0;
+  right: 0;
+  border-radius: 0;
+}
+
+input#toggle:checked ~ .content::after {
+  content: "DRIVER RODHAK";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(31, 43, 73, 0.83);
+}
+
+input#toggle:checked ~ .content .avatar {
+  opacity: 1;
+  transform: scale(1.8);
+  transition: all 0.6s ease-in 0.3s;
+}
+
+input#toggle:checked ~ .content nav {
+  right: 0;
+}
+
+span.title {
+  display: block;
+  color: #646e9f;
+  border-bottom: 1px solid #646e9f;
+  padding: 3px;
+  margin: 10px;
+  text-transform: uppercase;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+span.count {
+  background: #ff4081;
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 3px;
+  box-shadow: 0 2px 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+p {
+  color: #646e9f;
+  text-transform: lowercase;
+}
+
+/*toggle switch*/
+
+input.switch:empty {
+  margin-left: -999px;
+  opacity: 0;
+}
+
+input.switch:empty ~ label {
+  position: relative;
+  float: right;
+  line-height: 1.6em;
+  text-indent: 4em;
+  margin: 0.2em 0;
+  cursor: pointer;
+  content: "WELCOME TO RODHAK";
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+input.switch:empty ~ label:before,
+input.switch:empty ~ label:after {
+  position: absolute;
+  display: block;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  content: "";
+  width: 3.6em;
+  background-color: #171e33;
+  border-radius: 0.6em;
+  box-shadow: inset 0 0.2em 0 rgba(0, 0, 0, 0.3);
+  -webkit-transition: all 100ms ease-in;
+  transition: all 100ms ease-in;
+}
+
+input.switch:empty ~ label:after {
+  width: 1.4em;
+  top: 0.1em;
+  bottom: 0.1em;
+  margin-left: 0.1em;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  box-shadow: inset 0 -0.2em 0 rgba(0, 0, 0, 0.2);
+  opacity: 1;
+}
+
+input.switch:checked ~ label:after {
+  margin-left: 2em;
+  background: #1eebb4;
+}

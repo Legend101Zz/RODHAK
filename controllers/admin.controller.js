@@ -5,20 +5,109 @@ const bcrypt = require("bcrypt");
 
 //Main Dashboard
 module.exports.main = async (req, res, next) => {
-  const owners = await Owner.find();
-  console.log(owners);
-  res.render("admin/admin", { owners: owners });
+  const admin = req.session.adminId;
+  if (admin) {
+    const owners = await Owner.find();
+    console.log(owners);
+    res.render("admin/admin", { owners: owners });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
+};
+
+//Owner Verify PAge
+
+module.exports.ownerVerifyRender = async (req, res, next) => {
+  const admin = req.session.adminId;
+  const id = req.params.id;
+  if (admin) {
+    const owner = await Owner.findById(id);
+
+    res.render("admin/cardOwner", { data: owner });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
+};
+
+//verify owner
+
+module.exports.ownerVerify = async (req, res, next) => {
+  const admin = req.session.adminId;
+  const id = req.params.ownerId;
+  console.log("check", id);
+  if (admin) {
+    const owner = await Owner.findByIdAndUpdate(id, { isVerified: "true" });
+    console.log("verify", owner);
+    res.redirect("/api/v1/admin/main");
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
+};
+
+//Driver Verify PAge
+
+module.exports.driverVerifyRender = async (req, res, next) => {
+  const admin = req.session.adminId;
+  const id = req.params.id;
+  if (admin) {
+    const driver = await Driver.findById(id);
+
+    res.render("admin/cardDriver", { data: driver });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
+};
+
+//verify driver
+
+module.exports.driverVerify = async (req, res, next) => {
+  const admin = req.session.adminId;
+  const id = req.params.driverId;
+  console.log("check", id);
+  if (admin) {
+    await Driver.findOneAndUpdate(
+      { _id: id },
+      { isVerified: "true" },
+      {
+        new: true,
+      }
+    )
+      .then((result) => {
+        console.log("verify", result);
+        res.redirect("/api/v1/admin/main");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
 };
 
 //Verify Dashboard
-module.exports.verify = (req, res, next) => {
+module.exports.verify = async (req, res, next) => {
+  const drivers = await Driver.find();
+  const owners = await Owner.find();
+
   const date = new Date();
   let day = date.getDate();
   let month = date.getMonth() + 1;
   let year = date.getFullYear();
   let currentDate = `${day}-${month}-${year}`;
-  console.log(currentDate);
-  res.render("admin/verify", { date: currentDate });
+  // console.log(currentDate);
+  const admin = req.session.adminId;
+  if (admin) {
+    for (let owner of owners) {
+      console.log(owner);
+    }
+    res.render("admin/verify", {
+      date: currentDate,
+      owners: owners,
+      drivers: drivers,
+    });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
 };
 
 //admin-view-routes
@@ -70,13 +159,11 @@ module.exports.loginVerify = async (req, res, next) => {
     const validPassword = await bcrypt.compare(password, admin.password);
     console.log(validPassword);
     if (validPassword) {
-      console.log("hit");
-      res.status(201).json({
-        type: "success",
-        message: "Login successful",
-      });
+      // console.log("hit");
+      req.session.adminId = admin._id;
+      res.redirect("/api/v1/admin/main");
     } else {
-      console.log("here");
+      // console.log("here");
       res.status(201).json({
         type: "failure",
         message: "Enter valid credentials",

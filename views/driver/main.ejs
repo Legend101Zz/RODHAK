@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Driver</title>
+    <!----======== CSS ======== -->
+    <link rel="stylesheet" href="/stylesheets/driverMain.css" />
+  </head>
+  <body>
+    <div id="container">
+      <input type="checkbox" id="toggle" checked />
+      <label class="button" for="toggle"></label>
+
+      <div class="content">
+        <nav>
+          <div class="avatar"></div>
+          <a href="/api/v1/driver/start" class="switch">Start Trip</a>
+          <span class="title">Account Details</span>
+          <a href="#"><%=data.username%></a>
+          <a href="#">Total Trips&nbsp;&nbsp;<span class="count">0</span></a>
+          <a href="#"><%=data.phone%></a>
+          <a href="#"> Is Driver Verified: <span class="count"><%=data.isVerified%> </span </a>
+          <a href="#"><%=data.email%></a>
+          <span class="title">Settings</span>
+          <a href="#"
+            >Notifications
+            <input
+              type="checkbox"
+              id="switch1"
+              name="switch1"
+              class="switch"
+              checked
+            />
+            <label for="switch1">&nbsp;</label>
+            <p>Lorem ipsum dolor sit</p>
+          </a>
+
+          <a href="#"
+            >Shortcut
+            <input type="checkbox" id="switch2" name="switch1" class="switch" />
+            <label for="switch2">&nbsp;</label>
+            <p>Lorem ipsum dolor sit</p>
+          </a>
+        </nav>
+      </div>
+    </div>
+  </body>
+</html>
