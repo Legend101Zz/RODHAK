@@ -31,7 +31,12 @@ function setupMap(center) {
   const route = new MapboxDirections({
     accessToken: mapboxgl.accessToken,
     unit: "metric",
-    controls: { instructions: false, inputs: false },
+    controls: {
+      instructions: false,
+      inputs: false,
+    },
+    interactive: false,
+    congestion: true,
   });
 
   map.addControl(route, "top-left");
@@ -83,7 +88,7 @@ function setupMap(center) {
     const directions = new MapboxDirections({
       accessToken: mapboxgl.accessToken,
       unit: "metric",
-      controls: { instructions: false },
+      controls: { instructions: false, interactive: false },
     });
 
     map.addControl(directions, "top-left");
