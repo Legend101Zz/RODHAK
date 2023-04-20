@@ -34,14 +34,17 @@ const sessionConfig = {
 
 app.use(session(sessionConfig));
 
-//ROUTES
+//TESTING-ROUTES
 
-app.get("/", (req, res) => {
-  res.render("map");
-});
-app.get("/test", (req, res) => {
-  res.render("getMap");
-});
+// app.get("/", (req, res) => {
+//   res.render("map");
+// });
+// app.get("/test", (req, res) => {
+//   res.render("getMap");
+// });
+
+//MAIN-ROUTES
+
 app.use("/api/v1/owner", ownerRoutes);
 app.use("/api/v1/driver", driverRoutes);
 app.use("/api/v1/admin", adminRoutes);
@@ -59,10 +62,6 @@ mongoose
   .then((result) => {
     console.log("Database Connected!!");
     const server = app.listen(port);
-    const io = require("./socket").init(server);
-    io.on("connection", (socket) => {
-      console.log("some one is here", socket.id);
-    });
   })
   .catch((err) => {
     console.log(err);

@@ -1,5 +1,6 @@
 const Owner = require("../models/owner.schema");
 const bcrypt = require("bcrypt");
+
 // creating mail service
 const nodemailer = require("nodemailer");
 
@@ -119,5 +120,3 @@ module.exports.login = async (req, res, next) => {
     res.status(500).send({ message: "Internal Server Error" });
   }
 };
-
-//check if working
