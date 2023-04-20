@@ -28,67 +28,81 @@ function setupMap(center) {
     zoom: 15,
   });
 
-  // const nav = new mapboxgl.NavigationControl();
-  // map.addControl(nav);
+  const route = new MapboxDirections({
+    accessToken: mapboxgl.accessToken,
+    unit: "metric",
+    controls: { instructions: false, inputs: false },
+  });
 
-  // var directions = new MapboxDirections({
-  //   accessToken: mapboxgl.accessToken,
-  // });
-
-  // map.addControl(
-  //   new MapboxDirections({
-  //     accessToken: mapboxgl.accessToken,
-  //     unit: "metric",
-  //   }),
-  //   "top-left"
-  // );
-
-  const geojson = {
-    type: "FeatureCollection",
-    features: [
-      {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [76.5242236, 31.7108516],
-        },
-        properties: {
-          title: "Rodhak",
-          description: "Your Current Location",
-        },
-      },
-    ],
-  };
-  // add markers to map
-  for (const feature of geojson.features) {
-    // create a HTML element for each feature
-    const el = document.createElement("div");
-    el.className = "marker";
-
-    // make a marker for each feature and add to the map
-    new mapboxgl.Marker(el).setLngLat(feature.geometry.coordinates).addTo(map);
-  }
+  map.addControl(route, "top-left");
 
   map.on("load", async () => {
-    // Get the initial location of the International Space Station (ISS).
-    // const geojson = await getLocation();
-    // Add the ISS location as a source.
     map.addSource("iss", {
       type: "geojson",
       data: center,
     });
-    // Add the rocket symbol layer to the map.
+
+    //add image
+
+    const geojson = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: data.data.currentCoordinates,
+          },
+          properties: {
+            title: "Rodhak",
+            description: "Driver's Current Location",
+          },
+        },
+      ],
+    };
+    // add markers to map
+    for (const feature of geojson.features) {
+      // create a HTML element for each feature
+      const el = document.createElement("div");
+      el.className = "marker";
+
+      // make a marker for each feature and add to the map
+      new mapboxgl.Marker(el)
+        .setLngLat(feature.geometry.coordinates)
+        .setPopup(
+          new mapboxgl.Popup({ offset: 25 }) // add popups
+            .setHTML(
+              `<h3>${feature.properties.title}</h3><p>${feature.properties.description}</p>`
+            )
+        )
+        .addTo(map);
+    }
+
+    //add directions
+
+    const directions = new MapboxDirections({
+      accessToken: mapboxgl.accessToken,
+      unit: "metric",
+      controls: { instructions: false },
+    });
+
+    map.addControl(directions, "top-left");
+
+    directions.setOrigin(data.data.Start);
+    directions.setDestination(data.data.End);
+    const nav = new mapboxgl.NavigationControl();
+    map.addControl(nav);
+
     map.addLayer({
       id: "iss",
       type: "symbol",
       source: "iss",
       layout: {
-        // This icon is a part of the Mapbox Streets style.
-        // To view all images available in a Mapbox style, open
-        // the style in Mapbox Studio and click the "Images" tab.
-        // To add a new image to the style at runtime see
-        // https://docs.mapbox.com/mapbox-gl-js/example/add-image/
-        "icon-image": "./rodhak.jpeg",
+        "icon-image": "{marker-symbol}-15",
+        "text-field": "{title}",
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-offset": [0, 0.6],
+        "text-anchor": "top",
       },
     });
 
@@ -99,18 +113,18 @@ function setupMap(center) {
     }, 2000);
 
     async function getLocation(updateSource) {
-      // Make a GET request to the API and return the location of the ISS.
+      // Make a GET request to the API and return the location of the Driver
       try {
         const response = await fetch(url, { method: "GET" });
         const data = await response.json();
-        console.log(data.data.currentCoordinates);
+        console.log(data, data.data.currentCoordinates);
 
         // Fly the map to the location.
         map.flyTo({
           center: data.data.currentCoordinates,
           speed: 0.5,
         });
-        // Return the location of the ISS as GeoJSON.
+        // Return the location of the driver as GeoJSON.
         return {
           type: "FeatureCollection",
           features: [
