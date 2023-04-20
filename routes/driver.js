@@ -21,12 +21,13 @@ router.route("/login").get(drivers.login).post(drivers.loginVerify);
 
 //driver pages
 router.route("/main").get(drivers.main);
-router.route("/map/:id").get(drivers.map);
+
 router.route("/start").get(drivers.start).post(drivers.trip);
+router.route("/map/:id").post(drivers.map);
 
 //test routes
 router.route("/test").get((req, res) => {
-  res.render("driver/map");
+  res.render("driver/map", { location1: "Kullu,HP", location2: "Mandi,HP" });
 });
 
 module.exports = router;

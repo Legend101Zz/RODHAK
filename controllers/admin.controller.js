@@ -8,8 +8,9 @@ module.exports.main = async (req, res, next) => {
   const admin = req.session.adminId;
   if (admin) {
     const owners = await Owner.find();
-    console.log(owners);
-    res.render("admin/admin", { owners: owners });
+    const drivers = await Driver.find();
+    console.log(drivers);
+    res.render("admin/admin", { owners: owners, drivers: drivers });
   } else {
     res.redirect("/api/v1/admin/login");
   }

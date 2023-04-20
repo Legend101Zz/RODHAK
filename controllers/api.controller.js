@@ -14,7 +14,7 @@ module.exports.api = async (req, res, next) => {
   const latitude = req.body.data.lat;
   const coordinates = [longitude, latitude];
   console.log(coordinates);
-  await Trip.findByIdAndUpdate(id, { currentCoordinates: coordinates })
+  await Trip.findOneAndUpdate({ _id: id }, { currentCoordinates: coordinates })
     .then((result) => {
       console.log(result);
     })
@@ -56,9 +56,9 @@ module.exports.trips = async (req, res, next) => {
 //api for giving current coordinates
 
 module.exports.directions = async (req, res, next) => {
-  console.log(req.body);
-  const trip = await Trip.findById(req.body.id);
+  const trip = await Trip.findById(req.params.id);
   if (trip) {
+    console.log("kjbakhvbakbc asasn nunu");
     res.status(200).send({ message: "Success", data: trip });
   } else {
     res.status(401).send({ message: "Invalid Trip id" });
@@ -69,16 +69,14 @@ module.exports.directions = async (req, res, next) => {
 module.exports.trip = async (req, res, next) => {
   const trip = await Trip.findById(req.params.tripId);
   if (trip) {
-    res
-      .status(200)
-      .send({
-        message: "Success",
-        data: {
-          currentCoordinates: trip.currentCoordinates,
-          Start: trip.coordinateStart,
-          End: trip.coordinateEnd,
-        },
-      });
+    res.status(200).send({
+      message: "Success",
+      data: {
+        currentCoordinates: trip.currentCoordinates,
+        Start: trip.coordinateStart,
+        End: trip.coordinateEnd,
+      },
+    });
   } else {
     res.status(401).send({ message: "Invalid Trip id" });
   }

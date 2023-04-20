@@ -182,25 +182,7 @@ module.exports.trip = async (req, res, next) => {
     const start = req.body.start[0] + "," + req.body.start[1];
     const end = req.body.end[0] + "," + req.body.end[1];
     const veh = req.body.vehicle;
-    // const geoData = await geoCoder({
-    //   address: start,
-    // }).then((results) => {
-    //   console.log(results);
-    // });
-    // const starting = await geo.geocode(
-    //   "mapbox.places",
-    //   start,
-    //   function (err, geoData) {
-    //     console.log(geoData.features[0].geometry.coordinates);
-    //   }
-    // );
-    // const ending = await geo.geocode(
-    //   "mapbox.places",
-    //   end,
-    //   function (err, geoData) {
-    //     console.log(geoData.features[0].geometry.coordinates);
-    //   }
-    // );
+
     const geoData = await geoCoder
       .forwardGeocode({
         query: start,
@@ -223,19 +205,24 @@ module.exports.trip = async (req, res, next) => {
         Driver: id,
         coordinateStart: starting,
         coordinateEnd: ending,
+        Start: start,
+        End: end,
       });
       await trip
         .save()
         .then(async (result) => {
           console.log(result);
           await Driver.findByIdAndUpdate(id, { Trip: result._id });
-          res.render("driver/map", {
+          req.session.tripId = result._id;
+
+          res.render("driver/sure", {
             start: starting,
             ending: ending,
             check: check,
             location1: start,
             location2: end,
             veh: veh,
+            id: result._id,
           });
         })
         .catch((err) => {
@@ -248,6 +235,8 @@ module.exports.trip = async (req, res, next) => {
         Driver: id,
         coordinateStart: starting,
         coordinateEnd: ending,
+        Start: start,
+        End: end,
       });
 
       await trip
@@ -256,7 +245,7 @@ module.exports.trip = async (req, res, next) => {
           await Driver.findByIdAndUpdate(id, { Trip: result._id });
           req.session.tripId = result._id;
 
-          res.render("driver/map", {
+          res.render("driver/sure", {
             start: starting,
             ending: ending,
             check: check,
@@ -278,6 +267,11 @@ module.exports.trip = async (req, res, next) => {
 //showMap
 
 module.exports.map = async (req, res, next) => {
-  console.log(req.params);
-  res.render("driver/map");
+  console.log(req.body, "nunu");
+  const id = req.session.tripId;
+  if (id) {
+    res.render("driver/map");
+  } else {
+    res.direct("/api/v1/driver/login");
+  }
 };

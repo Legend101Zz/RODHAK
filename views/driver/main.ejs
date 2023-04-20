@@ -19,7 +19,7 @@
           <a href="/api/v1/driver/start" class="switch">Start Trip</a>
           <span class="title">Account Details</span>
           <a href="#"><%=data.username%></a>
-          <a href="#">Total Trips&nbsp;&nbsp;<span class="count">0</span></a>
+          <a href="#">Total Trips&nbsp;&nbsp;<span class="count"><%=data.Trip.length%></span></a>
           <a href="#"><%=data.phone%></a>
           <a href="#"> Is Driver Verified: <span class="count"><%=data.isVerified%> </span </a>
           <a href="#"><%=data.email%></a>

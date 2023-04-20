@@ -7,7 +7,7 @@ navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
 
 const queryString = window.location.pathname.split("p");
 console.log(queryString[1], "here");
-const url = `https://rodhak11.onrender.com/map${queryString[1]}`;
+const url = `http://localhost:3000/himraahi/map${queryString[1]}`;
 console.log(url);
 function successLocation(position) {
   setupMap([position.coords.longitude, position.coords.latitude]);
@@ -35,12 +35,13 @@ function setupMap(center) {
   //   accessToken: mapboxgl.accessToken,
   // });
 
-  map.addControl(
-    new MapboxDirections({
-      accessToken: mapboxgl.accessToken,
-    }),
-    "top-left"
-  );
+  // map.addControl(
+  //   new MapboxDirections({
+  //     accessToken: mapboxgl.accessToken,
+  //     unit: "metric",
+  //   }),
+  //   "top-left"
+  // );
 
   const geojson = {
     type: "FeatureCollection",

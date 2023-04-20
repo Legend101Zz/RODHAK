@@ -16,6 +16,8 @@ const TripSchema = new Schema({
 
   //   autopopulate: true,
   // },
+  Start: { type: String },
+  End: { type: String },
 
   currentCoordinates: {
     type: [Number],

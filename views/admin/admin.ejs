@@ -167,6 +167,25 @@
             <div class="data status">
               <span class="data-list">Verified</span>
             </div>
+            <% for (let driver of drivers){%> <% if (driver.isVerified
+            ==='true') {%>
+
+            <div class="data names">
+              <span class="data-list"><%=driver.username%></span>
+            </div>
+            <div class="data email">
+              <span class="data-list"><%=driver.email%></span>
+            </div>
+            <div class="data joined">
+              <span class="data-list"><i>+91</i>&nbsp; <%=driver.phone%></span>
+            </div>
+            <div class="data type">
+              <span class="data-list">Driver</span>
+            </div>
+            <div class="data status">
+              <span class="data-list">Verified</span>
+            </div>
+            <% }%> <% }%>
           </div>
           <br />
           <% }%> <% }%>
