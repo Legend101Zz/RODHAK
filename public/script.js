@@ -91,6 +91,7 @@ function setupMap(center) {
     directions.setOrigin(data.data.Start);
     directions.setDestination(data.data.End);
     const nav = new mapboxgl.NavigationControl();
+
     map.addControl(nav);
 
     map.addLayer({
