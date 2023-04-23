@@ -20,6 +20,7 @@ const driverSchema = new Schema(
       required: true,
       unique: true,
     },
+    age: { type: String, required: true },
     images: [ImageSchema],
     legal: [ImageSchema],
     isVerified: { type: String, default: "false" },

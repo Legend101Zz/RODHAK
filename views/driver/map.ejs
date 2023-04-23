@@ -53,7 +53,8 @@
     <div id="speed"><h1>Hello</h1></div>
     <script>
       mapboxgl.accessToken = "<%-process.env.MAP_BOX%>";
-
+      start = "<%-trip.Start%>";
+      end = "<%-trip.End%>";
       navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
         enableHighAccuracy: true,
       });
@@ -157,13 +158,16 @@
           zoom: 15,
         });
 
-        map.addControl(
-          new MapboxDirections({
-            accessToken: mapboxgl.accessToken,
-            unit: "metric",
-          }),
-          "top-left"
-        );
+        const directions = new MapboxDirections({
+          accessToken: mapboxgl.accessToken,
+          unit: "metric",
+          controls: { instructions: false, interactive: false },
+        });
+
+        map.addControl(directions, "bottom-left");
+
+        directions.setOrigin(start);
+        directions.setDestination(end);
         const nav = new mapboxgl.NavigationControl();
         map.addControl(nav);
 

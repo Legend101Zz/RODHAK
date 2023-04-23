@@ -23,7 +23,7 @@ function errorLocation() {
 function setupMap(center) {
   const map = new mapboxgl.Map({
     container: "map",
-    style: "mapbox://styles/mapbox/streets-v11",
+    style: "mapbox://styles/mapbox/navigation-night-v1",
     center: center,
     zoom: 15,
   });

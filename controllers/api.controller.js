@@ -12,9 +12,13 @@ module.exports.api = async (req, res, next) => {
   const id = req.session.tripId;
   const longitude = req.body.data.long;
   const latitude = req.body.data.lat;
+  const speed = req.body.data.speed;
   const coordinates = [longitude, latitude];
   console.log(coordinates);
-  await Trip.findOneAndUpdate({ _id: id }, { currentCoordinates: coordinates })
+  await Trip.findOneAndUpdate(
+    { _id: id },
+    { currentCoordinates: coordinates, Speed: speed }
+  )
     .then((result) => {
       console.log(result);
     })

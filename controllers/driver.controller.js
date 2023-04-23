@@ -7,6 +7,8 @@ const generator = require("generate-password");
 const geo = require("mapbox-geocoding");
 geo.setAccessToken(process.env.MAP_BOX);
 const bcrypt = require("bcrypt");
+const turf = require("@turf/distance");
+const Owner = require("../models/owner.schema");
 
 //mail-setup
 const nodemailer = require("nodemailer");
@@ -39,13 +41,16 @@ module.exports.renderRegister = (req, res) => {
 module.exports.DriverRegister = async (req, res, next) => {
   const obj = Object.assign({}, req.files);
 
-  const { email, username, phone } = req.body;
+  const { email, username, phone, owner, age } = req.body;
   console.log(req.body);
   const user = await Driver.findOne({ email: req.body.email });
-  if (user) {
-    return res
-      .status(409)
-      .send({ message: "Driver with the given email already exists" });
+  const own = await Owner.findOne({ email: req.body.owner });
+  console.log(own, "owner");
+  if (user && !own) {
+    return res.status(409).send({
+      message:
+        "Driver with the given email already exists or the Owner mail is not correct",
+    });
   }
 
   const password = generator.generate({
@@ -68,7 +73,8 @@ module.exports.DriverRegister = async (req, res, next) => {
     email: email,
     username: username,
     phone: phone,
-
+    age: age,
+    Owner: own._id,
     password: hashPassword,
   });
 
@@ -77,10 +83,15 @@ module.exports.DriverRegister = async (req, res, next) => {
 
   await driver
     .save()
-    .then((result) => {
+    .then(async (result) => {
       // console.log(result, "done");
       // res.render("users/wait");
-      console.log(result);
+
+      await Owner.findByIdAndUpdate(
+        { _id: own._id },
+        { $push: { Driver: result._id } }
+      );
+
       const mailOptions = {
         from: process.env.GMAIL_MAIL,
         to: email,
@@ -198,6 +209,19 @@ module.exports.trip = async (req, res, next) => {
     const starting = geoData.body.features[0].geometry.coordinates;
     const ending = geoData2.body.features[0].geometry.coordinates;
 
+    const dist1 = [
+      geoData.body.features[0].geometry.coordinates[1],
+      geoData.body.features[0].geometry.coordinates[0],
+    ];
+
+    const dist2 = [
+      geoData2.body.features[0].geometry.coordinates[1],
+      geoData2.body.features[0].geometry.coordinates[0],
+    ];
+
+    const distance = turf.default(dist1, dist2, { units: "kilometers" });
+
+    console.log(distance, "km");
     if (req.body.public === "on") {
       let check = true;
       const trip = new Trip({
@@ -212,7 +236,12 @@ module.exports.trip = async (req, res, next) => {
         .save()
         .then(async (result) => {
           console.log(result);
-          await Driver.findByIdAndUpdate(id, { Trip: result._id });
+
+          await Driver.update(
+            { _id: id },
+            { $push: { Trip: result._id } },
+            done
+          );
           req.session.tripId = result._id;
 
           res.render("driver/sure", {
@@ -267,11 +296,13 @@ module.exports.trip = async (req, res, next) => {
 //showMap
 
 module.exports.map = async (req, res, next) => {
-  console.log(req.body, "nunu");
   const id = req.session.tripId;
+  const trip = await Trip.findById(id);
+  console.log(trip);
+
   if (id) {
-    res.render("driver/map");
+    res.render("driver/map", { trip: trip });
   } else {
-    res.direct("/api/v1/driver/login");
+    res.redirect("/api/v1/driver/login");
   }
 };
