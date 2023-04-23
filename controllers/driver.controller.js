@@ -237,11 +237,7 @@ module.exports.trip = async (req, res, next) => {
         .then(async (result) => {
           console.log(result);
 
-          await Driver.update(
-            { _id: id },
-            { $push: { Trip: result._id } },
-            done
-          );
+          await Driver.findByIdAndUpdate(id, { $push: { Trip: result._id } });
           req.session.tripId = result._id;
 
           res.render("driver/sure", {
@@ -271,7 +267,8 @@ module.exports.trip = async (req, res, next) => {
       await trip
         .save()
         .then(async (result) => {
-          await Driver.findByIdAndUpdate(id, { Trip: result._id });
+          await Driver.findByIdAndUpdate(id, { $push: { Trip: result._id } });
+
           req.session.tripId = result._id;
 
           res.render("driver/sure", {

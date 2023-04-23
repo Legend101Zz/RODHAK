@@ -2,6 +2,7 @@ const Owner = require("../models/owner.schema");
 const Driver = require("../models/driver.schema");
 const Admin = require("../models/admin.schema");
 const bcrypt = require("bcrypt");
+const Vehicle = require("../models/vehicle.schema");
 
 //Main Dashboard
 module.exports.main = async (req, res, next) => {
@@ -9,8 +10,13 @@ module.exports.main = async (req, res, next) => {
   if (admin) {
     const owners = await Owner.find();
     const drivers = await Driver.find();
+    const vehicles = await Vehicle.find();
     console.log(drivers);
-    res.render("admin/admin", { owners: owners, drivers: drivers });
+    res.render("admin/admin", {
+      owners: owners,
+      drivers: drivers,
+      vehicles: vehicles,
+    });
   } else {
     res.redirect("/api/v1/admin/login");
   }
@@ -87,8 +93,8 @@ module.exports.driverVerify = async (req, res, next) => {
 
 //Verify Dashboard
 module.exports.verify = async (req, res, next) => {
-  const drivers = await Driver.find();
-  const owners = await Owner.find();
+  const drivers = await Driver.find({ isVerified: "false" });
+  const owners = await Owner.find({ isVerified: "false" });
 
   const date = new Date();
   let day = date.getDate();
@@ -98,14 +104,53 @@ module.exports.verify = async (req, res, next) => {
   // console.log(currentDate);
   const admin = req.session.adminId;
   if (admin) {
-    for (let owner of owners) {
-      console.log(owner);
-    }
+    // for (let owner of owners) {
+    //   console.log(owner);
+    // }
     res.render("admin/verify", {
       date: currentDate,
       owners: owners,
       drivers: drivers,
     });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
+};
+
+//vehicles
+
+//render page
+
+module.exports.vehicleMain = async (req, res, next) => {
+  const vehicles = await Vehicle.find({ isVerified: "false" });
+  console.log(vehicles);
+  res.render("admin/vehicle", { vehicles: vehicles });
+};
+
+//verify page
+
+module.exports.vehicleVerifyRender = async (req, res, next) => {
+  const admin = req.session.adminId;
+  const id = req.params.id;
+  if (admin) {
+    const vehicle = await Vehicle.findById(id);
+
+    res.render("admin/vehicleCard", { data: vehicle });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
+};
+
+//verify logic
+
+module.exports.vehicleVerify = async (req, res, next) => {
+  const admin = req.session.adminId;
+  const id = req.params.vehicleId;
+  console.log("check", id);
+  if (admin) {
+    const vehicle = await Vehicle.findByIdAndUpdate(id, { isVerified: "true" });
+    console.log("verify", vehicle);
+    res.redirect("/api/v1/admin/main");
   } else {
     res.redirect("/api/v1/admin/login");
   }
@@ -119,7 +164,7 @@ module.exports.view = async (req, res, next) => {
   res.render("admin/cards", { drivers: drivers, owners: owners });
 };
 
-//admin-login
+//creation of a new ADMIN
 
 module.exports.createAdmin = async (req, res, next) => {
   const password = "dnd2rodhak#123@";
@@ -146,6 +191,8 @@ module.exports.createAdmin = async (req, res, next) => {
       });
     });
 };
+
+//ADMIN LOGIN
 
 module.exports.login = async (req, res, next) => {
   res.render("admin/login");

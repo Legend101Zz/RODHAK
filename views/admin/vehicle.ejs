@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vehicle</title>
+    <!----======== CSS ======== -->
+    <link rel="stylesheet" href="/stylesheets/vehicle.css" />
+  </head>
+  <body>
+    <div class="cards">
+      <h3>Vehicle</h3>
+      <h1>Requests</h1>
+      <% for(let vehicle of vehicles) {%>
+      <a href="/api/v1/admin/verifyVehicle/<%=vehicle._id%>">
+        <div class="card card__three">
+          <div class="card__bg"></div>
+          <img class="card__img" src="/bus.png" />
+          <div class="card__text">
+            <p class="card__title"><%=vehicle.vehicleNum%></p>
+          </div>
+        </div>
+      </a>
+      <% }%>
+    </div>
+
+    <span class="notice">Team RODHAK</span>
+    <a class="twitter__link" target="_blank" href="/api/v1/admin/main"
+      ><img class="twitter__icon" src="/rodhak.jpeg" /> Back</a
+    >
+    <script src="/javascripts/vehicle.js"></script>
+  </body>
+</html>

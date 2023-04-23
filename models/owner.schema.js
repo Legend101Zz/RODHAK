@@ -34,6 +34,13 @@ const OwnerSchema = new Schema(
         autopopulate: true,
       },
     ],
+    Vehicle: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Vehicle",
+        autopopulate: true,
+      },
+    ],
   },
   { timestamps: true }
 );

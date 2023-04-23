@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const VehicleSchema = new Schema({
   name: String,
-  vehichleNum: String,
+  vehicleNum: { type: String, required: true },
 
   Trip: [
     {

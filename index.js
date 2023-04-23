@@ -1,15 +1,22 @@
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
+
 const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
 const path = require("path");
 const mongoose = require("mongoose");
+
+//ROUTES
 const ownerRoutes = require("./routes/owner");
 const driverRoutes = require("./routes/driver");
 const adminRoutes = require("./routes/admin");
+const vehicleRoutes = require("./routes/vehicle");
+
+//API_ROUTES
 const apiRoutes = require("./routes/api");
+
 const cors = require("cors");
 const session = require("express-session");
 
@@ -36,18 +43,22 @@ app.use(session(sessionConfig));
 
 //TESTING-ROUTES
 
-// app.get("/", (req, res) => {
-//   res.render("map");
-// });
-// app.get("/test", (req, res) => {
-//   res.render("getMap");
-// });
+/* app.get("/", (req, res) => {
+ res.render("map");
+ });
+ app.get("/test", (req, res) => {
+  res.render("getMap");
+ });
+ */
 
 //MAIN-ROUTES
 
 app.use("/api/v1/owner", ownerRoutes);
 app.use("/api/v1/driver", driverRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/vehicle", vehicleRoutes);
+
+//API_ROUTES
 app.use("/himraahi/", apiRoutes);
 
 //ROUTE TO HANDLE RANDOM URLS

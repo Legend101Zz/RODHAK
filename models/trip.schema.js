@@ -10,12 +10,12 @@ const TripSchema = new Schema({
 
     autopopulate: true,
   },
-  // Vehicle: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: "Vehicle",
+  Vehicle: {
+    type: Schema.Types.ObjectId,
+    ref: "Vehicle",
 
-  //   autopopulate: true,
-  // },
+    autopopulate: true,
+  },
   Start: { type: String },
   End: { type: String },
   Speed: { type: Number, default: 0 },

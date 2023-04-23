@@ -5,11 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/stylesheets/adminCards.css" />
-    <title>Admin-cards</title>
+    <title>Vehicle-cards</title>
   </head>
   <body>
     <div class="payment-title">
-      <h1>Verify Driver</h1>
+      <h1>Verify Vehicle</h1>
     </div>
     <div class="container preload">
       <div class="creditcard">
@@ -48,14 +48,14 @@
                 id="svgnumber"
                 class="st2 st3 st4"
               >
-                <%= data.email%>
+                <%= data.vehicleNum%>
               </text>
               <text
                 transform="matrix(1 0 0 1 54.1064 428.1723)"
                 id="svgname"
                 class="st2 st5 st6"
               >
-                <%=data.username%>
+                <%=data.Owner.business %>
               </text>
               <text
                 transform="matrix(1 0 0 1 54.1074 389.8793)"
@@ -66,14 +66,12 @@
               <text
                 transform="matrix(1 0 0 1 479.7754 388.8793)"
                 class="st7 st5 st8"
-              >
-                <%=data.phone %>
-              </text>
+              ></text>
               <text
                 transform="matrix(1 0 0 1 65.1054 241.5)"
                 class="st7 st5 st8"
               >
-                Driver Email
+                Vehicle Number
               </text>
               <g>
                 <text
@@ -81,20 +79,18 @@
                   id="svgexpire"
                   class="st2 st5 st9"
                 >
-                  <%= data.email%>
+                  <%=data.name %>
                 </text>
                 <text
                   transform="matrix(1 0 0 1 479.3848 417.0097)"
                   class="st2 st10 st11"
                 >
-                  MAIL
+                  Name
                 </text>
                 <text
                   transform="matrix(1 0 0 1 479.3848 435.6762)"
                   class="st2 st10 st11"
-                >
-                  ID
-                </text>
+                ></text>
                 <polygon
                   class="st2"
                   points="554.5,421 540.4,414.2 540.4,427.9 		"
@@ -176,18 +172,8 @@
         <div class="back"></div>
       </div>
     </div>
-    <div class="form-container">
-      <form>
-        <div class="field-container">
-          <label for="name">Adhaar</label>
-          <input type="image" src="<%=data.images[0].url%>" alt="Submit" />
-          <label for="name">Identity</label>
-          <input type="image" src="<%=data.legal[0].url%>" alt="Submit" />
-        </div>
-        <a href="/api/v1/admin/verifyDriverButton/<%=data._id%>">
-          <h1><b>Verify</b></h1>
-        </a>
-      </form>
-    </div>
+    <a href="/api/v1/admin/verifyVehicleButton/<%=data._id%>">
+      <h1><b>Verify</b></h1>
+    </a>
   </body>
 </html>
