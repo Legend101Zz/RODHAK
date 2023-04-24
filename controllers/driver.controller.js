@@ -201,6 +201,7 @@ module.exports.trip = async (req, res, next) => {
 
     var numLower = req.body.vehicle.toLowerCase();
     const num = numLower.replace(/\W/g, "");
+    const vehicle = await Vehicle.findOne({ vehicleNum: num });
 
     const geoData = await geoCoder
       .forwardGeocode({
@@ -230,73 +231,92 @@ module.exports.trip = async (req, res, next) => {
     const distance = turf.default(starting, ending, { units: "kilometers" });
 
     console.log(distance, "km");
-    if (req.body.public === "on") {
-      let check = true;
-      const trip = new Trip({
-        isPublic: check,
-        Driver: id,
-        coordinateStart: starting,
-        coordinateEnd: ending,
-        Start: start,
-        End: end,
-      });
-      await trip
-        .save()
-        .then(async (result) => {
-          console.log(result);
-
-          await Vehicle.findOneAndUpdate(
-            { vehicleNum: num },
-            { $push: { Trip: result._id } }
-          );
-
-          await Driver.findByIdAndUpdate(id, { $push: { Trip: result._id } });
-          req.session.tripId = result._id;
-
-          res.render("driver/sure", {
-            start: starting,
-            ending: ending,
-            check: check,
-            location1: start,
-            location2: end,
-            veh: veh,
-            id: result._id,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
+    if (vehicle) {
+      if (req.body.public === "on") {
+        let check = true;
+        const trip = new Trip({
+          isPublic: check,
+          Driver: id,
+          coordinateStart: starting,
+          coordinateEnd: ending,
+          Start: start,
+          End: end,
         });
+        await trip
+          .save()
+          .then(async (result) => {
+            console.log(result);
+            if (vehicle.isVerified == "false") {
+              res.render("users/vehicle");
+            } else {
+              await Vehicle.findOneAndUpdate(
+                { vehicleNum: num },
+                { $push: { Trip: result._id } }
+              );
+
+              await Driver.findByIdAndUpdate(id, {
+                $push: { Trip: result._id },
+              });
+              req.session.tripId = result._id;
+
+              res.render("driver/sure", {
+                start: starting,
+                ending: ending,
+                check: check,
+                location1: start,
+                location2: end,
+                veh: veh,
+                id: result._id,
+              });
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        let check = false;
+        const trip = new Trip({
+          isPublic: check,
+          Driver: id,
+          coordinateStart: starting,
+          coordinateEnd: ending,
+          Start: start,
+          End: end,
+        });
+
+        await trip
+          .save()
+          .then(async (result) => {
+            if (vehicle.isVerified == "false") {
+              res.render("users/vehicle");
+            } else {
+              await Vehicle.findOneAndUpdate(
+                { vehicleNum: num },
+                { $push: { Trip: result._id } }
+              );
+              await Driver.findByIdAndUpdate(id, {
+                $push: { Trip: result._id },
+              });
+
+              req.session.tripId = result._id;
+
+              res.render("driver/sure", {
+                start: starting,
+                ending: ending,
+                check: check,
+                location1: start,
+                location2: end,
+                veh: veh,
+                id: result._id,
+              });
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
     } else {
-      let check = false;
-      const trip = new Trip({
-        isPublic: check,
-        Driver: id,
-        coordinateStart: starting,
-        coordinateEnd: ending,
-        Start: start,
-        End: end,
-      });
-
-      await trip
-        .save()
-        .then(async (result) => {
-          await Driver.findByIdAndUpdate(id, { $push: { Trip: result._id } });
-
-          req.session.tripId = result._id;
-
-          res.render("driver/sure", {
-            start: starting,
-            ending: ending,
-            check: check,
-            location1: start,
-            location2: end,
-            veh: veh,
-            id: result._id,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      res.render("users/vehicle2");
     }
   } else {
     res.redirect("/api/v1/driver/login");
