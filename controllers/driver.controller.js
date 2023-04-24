@@ -9,6 +9,7 @@ geo.setAccessToken(process.env.MAP_BOX);
 const bcrypt = require("bcrypt");
 const turf = require("@turf/distance");
 const Owner = require("../models/owner.schema");
+const Vehicle = require("../models/vehicle.schema");
 
 //mail-setup
 const nodemailer = require("nodemailer");
@@ -194,6 +195,9 @@ module.exports.trip = async (req, res, next) => {
     const end = req.body.end[0] + "," + req.body.end[1];
     const veh = req.body.vehicle;
 
+    var numLower = req.body.vehicle.toLowerCase();
+    const num = numLower.replace(/\W/g, "");
+
     const geoData = await geoCoder
       .forwardGeocode({
         query: start,
@@ -219,7 +223,7 @@ module.exports.trip = async (req, res, next) => {
       geoData2.body.features[0].geometry.coordinates[0],
     ];
 
-    const distance = turf.default(dist1, dist2, { units: "kilometers" });
+    const distance = turf.default(starting, ending, { units: "kilometers" });
 
     console.log(distance, "km");
     if (req.body.public === "on") {
@@ -236,6 +240,11 @@ module.exports.trip = async (req, res, next) => {
         .save()
         .then(async (result) => {
           console.log(result);
+
+          await Vehicle.findOneAndUpdate(
+            { vehicleNum: num },
+            { $push: { Trip: result._id } }
+          );
 
           await Driver.findByIdAndUpdate(id, { $push: { Trip: result._id } });
           req.session.tripId = result._id;

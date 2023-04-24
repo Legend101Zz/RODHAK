@@ -161,7 +161,7 @@
         const directions = new MapboxDirections({
           accessToken: mapboxgl.accessToken,
           unit: "metric",
-          controls: { instructions: false, interactive: false },
+          controls: { interactive: false },
         });
 
         map.addControl(directions, "bottom-left");
