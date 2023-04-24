@@ -164,7 +164,11 @@ module.exports.main = async (req, res, next) => {
     await Driver.findById(id)
       .then((result) => {
         console.log(result);
-        res.render("driver/main", { data: result });
+        if (result.isVerified == "false") {
+          res.render("driver/wait");
+        } else {
+          res.render("driver/main", { data: result });
+        }
       })
       .catch((err) => {
         console.log(err);
