@@ -33,10 +33,31 @@
         width: 100vw;
       }
 
-      #speed {
-        height: 20px;
-        width: 20px;
+      #speeds {
+        height: 50px;
+        width: 50px;
         color: black;
+        border-radius: 50%;
+        background-color: white;
+        opacity: 0.2rem;
+        box-shadow: 0px -5px 10px 0px rgba(0, 0, 0, 0.5);
+        z-index: 100;
+        position: absolute;
+        bottom: 4rem;
+        right: 0.5rem;
+      }
+      #speed {
+        /* margin-left: 0.7rem; */
+        text-align: center;
+        margin-top: 0.5rem;
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+      .kmh {
+        margin-top: -0.2rem;
+        /* margin-left: 0.2rem; */
+        text-align: center;
+        font-size: 0.8rem;
       }
       .marker {
         background-image: url("/rodhak.jpeg");
@@ -46,11 +67,105 @@
         border-radius: 50%;
         cursor: pointer;
       }
+
+      /* CSS */
+      .stop-btn {
+        position: fixed;
+        z-index: 100;
+      }
+      .button-24 {
+        background: #ff4742;
+        border: 1px solid #ff4742;
+        border-radius: 6px;
+        box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+        box-sizing: border-box;
+        color: #ffffff;
+        cursor: pointer;
+        display: inline-block;
+        font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
+        font-size: 16px;
+        font-weight: 800;
+        line-height: 16px;
+        min-height: 40px;
+        outline: 0;
+        padding: 12px 14px;
+        text-align: center;
+        text-rendering: geometricprecision;
+        text-transform: none;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        vertical-align: middle;
+      }
+
+      .button-24:hover,
+      .button-24:active {
+        background-color: initial;
+        background-position: 0 0;
+        color: white;
+      }
+
+      .button-24:active {
+        opacity: 0.5;
+      }
+      @media screen and (max-width: 786px) {
+        .hareKrishna {
+          /* position: absolute;
+          left: -100%; */
+          display: none;
+        }
+        .mapboxgl-ctrl-directions.mapboxgl-ctrl {
+          display: none;
+        }
+      }
+      .hareKrishna {
+        /* position: absolute;
+          left: -100%; */
+        display: none;
+      }
+
+      .toggle {
+        position: relative;
+        height: 12px;
+        width: 125px;
+        cursor: pointer;
+        border-radius: 25px;
+        background-color: #fff;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        z-index: 101;
+      }
+      .toggle::before {
+        content: "";
+        position: fixed;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 50px;
+        width: 50px;
+        border-radius: 50%;
+        background-color: #7d2ae8;
+        border: 10px solid #fff;
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+      }
+      .toggle.active::before {
+        left: calc(100% - 70px);
+        background-color: #fff;
+        border-color: #7d2ae8;
+      }
     </style>
   </head>
   <body>
+    <div class="toggle"></div>
+    <div class="stop-btn">
+      <button class="button-24" role="button">Stop Trip</button>
+    </div>
     <div id="map"></div>
-    <div id="speed"><h1>Hello</h1></div>
+    <div id="speeds">
+      <div id="speed"></div>
+      <!-- <br /> -->
+      <p class="kmh">Km/h</p>
+    </div>
     <script>
       mapboxgl.accessToken = "<%-process.env.MAP_BOX%>";
       start = "<%-trip.Start%>";
@@ -63,6 +178,23 @@
         enableHighAccuracy: true,
       });
 
+      //DOM-manipulation
+
+      const toggleBtn = document.querySelector(".toggle");
+      const windowControll = document.getElementsByClassName(
+        "mapboxgl-ctrl-directions"
+      );
+      const krishna = document.querySelector(".directions-control-directions");
+      console.log(krishna);
+      console.log(windowControll);
+      console.log(toggleBtn);
+      toggleBtn.addEventListener("click", () => {
+        toggleBtn.classList.toggle("active");
+        windowControll.classList.toggle("hareKrishna");
+        // directions-control directions-control-directions
+      });
+
+      //api-post for sending driver's coord
       async function postJSON(data) {
         try {
           const response = await fetch(
@@ -84,18 +216,33 @@
         }
       }
 
+      const checkData = [];
+
       function successApi(position) {
         console.log(position.coords);
         const long = position.coords.longitude;
         const lat = position.coords.latitude;
         const speed = position.coords.speed;
         const data = { long, lat, speed };
+        checkData = data;
 
-        const pointer = [long, lat];
-        console.log(data);
+        const exact = document.getElementById("speed");
+        console.log(position.coords.heading);
+        if (position.coords.heading) {
+          exact.innerHTML = `${position.coords.heading}`;
+        } else {
+          exact.innerHTML = "0";
+        }
 
-        postJSON({ data: data });
+        return data;
+        // setupMap2([position.coords.longitude, position.coords.latitude]);
+        // const pointer = [long, lat];
+        // console.log(data);
+
+        // postJSON({ data: data });
       }
+
+      console.log(checkData);
 
       function errorApi(err) {
         setupMap([77.170973, 31.104153]);
@@ -105,14 +252,50 @@
       function successLocation(position) {
         console.log(position);
         setupMap([position.coords.longitude, position.coords.latitude]);
-        const exact = document.getElementById("speed");
-        exact.innerHTML = position.coords.heading;
       }
 
       function errorLocation() {
         const exact = document.getElementById("speed");
         exact.innerHTML = "0";
       }
+
+      // function setupMap2(center) {
+      //   const map = new mapboxgl.Map({
+      //     container: "map",
+      //     style: "mapbox://styles/mapbox/navigation-night-v1",
+      //     center: center,
+      //     zoom: 15,
+      //   });
+
+      //   const geojson = {
+      //     type: "FeatureCollection",
+      //     features: [
+      //       {
+      //         type: "Feature",
+      //         geometry: {
+      //           type: "Point",
+      //           coordinates: center,
+      //         },
+      //         properties: {
+      //           title: "Rodhak",
+      //           description: "Your Current Location",
+      //         },
+      //       },
+      //     ],
+      //   };
+
+      //   // add markers to map
+      //   for (const feature of geojson.features) {
+      //     // create a HTML element for each feature
+      //     const el = document.createElement("div");
+      //     el.className = "marker";
+
+      //     // make a marker for each feature and add to the map
+      //     new mapboxgl.Marker(el)
+      //       .setLngLat(feature.geometry.coordinates)
+      //       .addTo(map);
+      //   }
+      // }
 
       function setupMap(center) {
         const map = new mapboxgl.Map({
