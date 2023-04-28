@@ -52,7 +52,18 @@ module.exports.owner = async (req, res, next) => {
 
 //all trips api
 module.exports.trips = async (req, res, next) => {
-  const trips = await Trip.find().where("isPublic").equals("true");
+  const trips = await Trip.find().select({
+    _id: 1,
+    isFinished: 1,
+    isPublic: 1,
+    Start: 1,
+    End: 1,
+    Driver: 0,
+    Speed: 0,
+    currentCoordinates: 0,
+    coordinateStart: 0,
+    coordinateEnd: 0,
+  });
   console.log(trips);
   res.status(200).send({ message: "Success", data: trips });
 };
@@ -69,7 +80,7 @@ module.exports.directions = async (req, res, next) => {
   }
 };
 
-//getting singleTrip api for m
+//getting singleTrip api for map
 module.exports.trip = async (req, res, next) => {
   const trip = await Trip.findById(req.params.tripId);
   if (trip) {
