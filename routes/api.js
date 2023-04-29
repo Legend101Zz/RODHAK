@@ -10,4 +10,5 @@ router.route("/owner").post(apis.owner);
 router.route("/map/:tripId").get(apis.trip);
 router.route("/trip/:tripId").get(apis.singleTrip);
 router.route("/directions/:id").post(apis.directions);
+router.route("/owner/:id").get(apis.ownerData);
 module.exports = router;

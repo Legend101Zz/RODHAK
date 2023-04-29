@@ -52,19 +52,21 @@ module.exports.owner = async (req, res, next) => {
 
 //all trips api
 module.exports.trips = async (req, res, next) => {
-  const trips = await Trip.find().select({
-    _id: 1,
-    isFinished: 1,
-    isPublic: 1,
-    Start: 1,
-    End: 1,
-    Driver: 0,
-    Speed: 0,
-    currentCoordinates: 0,
-    coordinateStart: 0,
-    coordinateEnd: 0,
-  });
-  console.log(trips);
+  const trips = await Trip.find(
+    {
+      isFinished: false,
+      isPublic: true,
+    },
+    {
+      Driver: 0,
+      coordinateStart: 0,
+      coordinateEnd: 0,
+      Speed: 0,
+      isFinished: 0,
+      isPublic: 0,
+    }
+  );
+  console.log(trips, "hello1");
   res.status(200).send({ message: "Success", data: trips });
 };
 
@@ -115,5 +117,35 @@ module.exports.singleTrip = async (req, res, next) => {
     }
   } catch (err) {
     console.log(err);
+  }
+};
+
+//send individual owner data no vehicles and rest
+
+module.exports.ownerData = async (req, res, next) => {
+  console.log("checl");
+
+  const id = req.params.id;
+  const owner = await Owner.findById(id, { Driver: 0, Vehicle: 0 });
+  console.log(owner);
+  if (owner) {
+    res.status(200).send({ message: "success", data: owner });
+  } else {
+    res.status(401).send({ message: "Invalid Owner id" });
+  }
+};
+
+// owner vehicles data
+
+module.exports.ownerVehicleData = async (req, res, next) => {
+  console.log("checl");
+
+  const id = req.params.id;
+  const owner = await Owner.findById(id, { Driver: 0, Vehicle: 0 });
+  console.log(owner);
+  if (owner) {
+    res.status(200).send({ message: "success", data: owner });
+  } else {
+    res.status(401).send({ message: "Invalid Owner id" });
   }
 };

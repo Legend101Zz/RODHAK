@@ -12,6 +12,7 @@ try {
       .then(async (response) => {
         const data1 = await response.json();
         console.log(response, data1);
+
         setupMap(
           data1.data.currentCoordinates,
           data1.data.Start,

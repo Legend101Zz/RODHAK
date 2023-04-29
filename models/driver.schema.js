@@ -28,14 +28,11 @@ const driverSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "Trip",
-        autopopulate: true,
       },
     ],
     Owner: {
       type: Schema.Types.ObjectId,
       ref: "Owner",
-
-      autopopulate: true,
     },
   },
   { timestamps: true }
