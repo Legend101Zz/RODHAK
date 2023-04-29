@@ -31,7 +31,10 @@ module.exports.api = async (req, res, next) => {
 module.exports.owner = async (req, res, next) => {
   try {
     console.log(req.body);
-    const owner = await Owner.findOne({ email: req.body.email });
+    const owner = await Owner.findOne(
+      { email: req.body.email },
+      { Driver: 0, Vehicle: 0 }
+    );
     console.log(owner);
     if (!owner)
       return res.status(401).send({ message: "Invalid Email or Password" });
@@ -126,22 +129,7 @@ module.exports.ownerData = async (req, res, next) => {
   console.log("checl");
 
   const id = req.params.id;
-  const owner = await Owner.findById(id, { Driver: 0, Vehicle: 0 });
-  console.log(owner);
-  if (owner) {
-    res.status(200).send({ message: "success", data: owner });
-  } else {
-    res.status(401).send({ message: "Invalid Owner id" });
-  }
-};
-
-// owner vehicles data
-
-module.exports.ownerVehicleData = async (req, res, next) => {
-  console.log("checl");
-
-  const id = req.params.id;
-  const owner = await Owner.findById(id, { Driver: 0, Vehicle: 0 });
+  const owner = await Owner.findById(id);
   console.log(owner);
   if (owner) {
     res.status(200).send({ message: "success", data: owner });

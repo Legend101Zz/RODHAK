@@ -9,13 +9,11 @@ const VehicleSchema = new Schema({
     {
       type: Schema.Types.ObjectId,
       ref: "Trip",
-      autopopulate: true,
     },
   ],
   Owner: {
     type: Schema.Types.ObjectId,
     ref: "Owner",
-    autopopulate: true,
   },
   isVerified: { type: String, default: "false" },
 });

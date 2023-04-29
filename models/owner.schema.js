@@ -31,14 +31,14 @@ const OwnerSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "Driver",
-        autopopulate: { select: "name , email , phone, isVerified" },
+        autopopulate: { select: "email" },
       },
     ],
     Vehicle: [
       {
         type: Schema.Types.ObjectId,
         ref: "Vehicle",
-        autopopulate: { select: "name, vehicleNum, isVerified" },
+        autopopulate: { select: "vehicleNum" },
       },
     ],
   },
