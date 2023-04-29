@@ -78,7 +78,6 @@ module.exports.trips = async (req, res, next) => {
 module.exports.directions = async (req, res, next) => {
   const trip = await Trip.findById(req.params.id);
   if (trip) {
-    console.log("kjbakhvbakbc asasn nunu");
     res.status(200).send({ message: "Success", data: trip });
   } else {
     res.status(401).send({ message: "Invalid Trip id" });

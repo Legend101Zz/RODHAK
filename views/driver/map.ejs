@@ -181,16 +181,23 @@
       //DOM-manipulation
 
       const toggleBtn = document.querySelector(".toggle");
+      console.log(toggleBtn, "heree");
       const windowControll = document.getElementsByClassName(
         "mapboxgl-ctrl-directions"
       );
       const krishna = document.querySelector(".directions-control-directions");
-      console.log(krishna);
+      console.log(krishna, "styling");
       console.log(windowControll);
-      console.log(toggleBtn);
+
+      // function myFunction() {
+      //   console.log("check");
+      //   toggleBtn.classList.toggle("active");
+      //   windowControll.classList.toggle("hareKrishna");
+      // }
+
       toggleBtn.addEventListener("click", () => {
         toggleBtn.classList.toggle("active");
-        windowControll.classList.toggle("hareKrishna");
+        windowControll[0].classList.toggle("hareKrishna");
         // directions-control directions-control-directions
       });
 
@@ -216,33 +223,29 @@
         }
       }
 
-      const checkData = [];
-
       function successApi(position) {
         console.log(position.coords);
         const long = position.coords.longitude;
         const lat = position.coords.latitude;
         const speed = position.coords.speed;
         const data = { long, lat, speed };
-        checkData = data;
 
         const exact = document.getElementById("speed");
         console.log(position.coords.heading);
         if (position.coords.heading) {
           exact.innerHTML = `${position.coords.heading}`;
+          setupMap([position.coords.longitude, position.coords.latitude]);
         } else {
           exact.innerHTML = "0";
         }
 
         return data;
-        // setupMap2([position.coords.longitude, position.coords.latitude]);
+
         // const pointer = [long, lat];
         // console.log(data);
 
         // postJSON({ data: data });
       }
-
-      console.log(checkData);
 
       function errorApi(err) {
         setupMap([77.170973, 31.104153]);
@@ -258,44 +261,6 @@
         const exact = document.getElementById("speed");
         exact.innerHTML = "0";
       }
-
-      // function setupMap2(center) {
-      //   const map = new mapboxgl.Map({
-      //     container: "map",
-      //     style: "mapbox://styles/mapbox/navigation-night-v1",
-      //     center: center,
-      //     zoom: 15,
-      //   });
-
-      //   const geojson = {
-      //     type: "FeatureCollection",
-      //     features: [
-      //       {
-      //         type: "Feature",
-      //         geometry: {
-      //           type: "Point",
-      //           coordinates: center,
-      //         },
-      //         properties: {
-      //           title: "Rodhak",
-      //           description: "Your Current Location",
-      //         },
-      //       },
-      //     ],
-      //   };
-
-      //   // add markers to map
-      //   for (const feature of geojson.features) {
-      //     // create a HTML element for each feature
-      //     const el = document.createElement("div");
-      //     el.className = "marker";
-
-      //     // make a marker for each feature and add to the map
-      //     new mapboxgl.Marker(el)
-      //       .setLngLat(feature.geometry.coordinates)
-      //       .addTo(map);
-      //   }
-      // }
 
       function setupMap(center) {
         const map = new mapboxgl.Map({
