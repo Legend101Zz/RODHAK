@@ -224,3 +224,9 @@ module.exports.loginVerify = async (req, res, next) => {
     });
   }
 };
+
+//admin owner dashboard
+
+module.exports.ownerDetails = async (req, res, next) => {
+  res.render("admin/individualDetails");
+};

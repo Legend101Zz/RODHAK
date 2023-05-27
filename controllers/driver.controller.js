@@ -336,3 +336,18 @@ module.exports.map = async (req, res, next) => {
     res.redirect("/api/v1/driver/login");
   }
 };
+
+//close
+
+module.exports.close = async(req,res,next)=>{
+  const id = req.session.tripId;
+  const trip = await Trip.findById(id);
+  console.log(trip);
+  if (id) {
+    res.redirect("/api/v1/driver/main", { trip: trip });
+  } else {
+    res.redirect("/api/v1/driver/main");
+  }
+
+
+}

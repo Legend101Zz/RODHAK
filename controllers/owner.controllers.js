@@ -78,9 +78,9 @@ module.exports.register = async (req, res, next) => {
         Dear ${username}, Thank you for registering your business ${business} with us \n .Your credentials are :- email:- <b> ${email}</b> , password is :- <b> ${password}</b>. Please use this to login again after we get your details verified.`,
         };
 
-        transporter.sendMail(mailOptions).then(() => {
+        transporter.sendMail(mailOptions).then((result) => {
           //email sent and verification saved
-
+          console.log("email sent and verification saved", result);
           res.render("users/wait");
         });
       })
@@ -119,4 +119,35 @@ module.exports.login = async (req, res, next) => {
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error" });
   }
+};
+
+//mail testing
+
+module.exports.test = (req, res) => {
+  console.log("hit");
+  const mailOptions = {
+    from: process.env.GMAIL_MAIL,
+    to: "21bma010@nith.ac.in",
+    subject: "Welcome to Rodhak.",
+    html: `
+Dear  your password is :-. Please use this to login again.`,
+  };
+
+  transporter
+    .sendMail(mailOptions)
+    .then(() => {
+      //email sent and verification saved
+
+      res.status(201).json({
+        type: "success",
+        message: "mail sent",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(201).json({
+        type: "failure",
+        message: "denial email not sent",
+      });
+    });
 };

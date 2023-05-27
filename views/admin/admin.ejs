@@ -51,7 +51,7 @@
           <li>
             <a href="/api/v1/admin/vehicle">
               <i class="uil uil-comments"></i>
-              <span class="link-name">Requests</span>
+              <span class="link-name">Vehicle Requests</span>
             </a>
           </li>
           <li>
@@ -125,7 +125,7 @@
         <div class="activity">
           <div class="title">
             <i class="uil uil-clock-three"></i>
-            <span class="text">Recent Activity</span>
+            <span class="text">Recent Activity for Owners</span>
           </div>
           <div class="activity-data">
             <div class="data names">
@@ -167,9 +167,41 @@
             <div class="data status">
               <span class="data-list">Verified</span>
             </div>
-            <% for (let driver of drivers){%> <% if (driver.isVerified
-            ==='true') {%>
-
+          </div>
+          <br />
+          <% }%> <% }%>
+        </div>
+        <div class="activity">
+          <div class="title">
+            <i class="uil uil-clock-three"></i>
+            <span class="text">Recent Activity for Drivers</span>
+          </div>
+          <div class="activity-data">
+            <div class="data names">
+              <span class="data-title">Name</span>
+            </div>
+            <div class="data email">
+              <span class="data-title">Email</span>
+            </div>
+            <div class="data joined">
+              <span class="data-title"
+                >&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                &nbsp; &nbsp;Phone</span
+              >
+            </div>
+            <div class="data type">
+              <span class="data-title"
+                >&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Type</span
+              >
+            </div>
+            <div class="data status">
+              <span class="data-title">Status</span>
+            </div>
+          </div>
+          <br />
+          <% for (let driver of drivers){%> <% if (driver.isVerified ==='true')
+          {%>
+          <div class="activity-data">
             <div class="data names">
               <span class="data-list"><%=driver.username%></span>
             </div>
@@ -185,7 +217,6 @@
             <div class="data status">
               <span class="data-list">Verified</span>
             </div>
-            <% }%> <% }%>
           </div>
           <br />
           <% }%> <% }%>

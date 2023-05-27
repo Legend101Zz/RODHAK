@@ -14,6 +14,10 @@ router.route("/verify").get(admin.verify);
 //vehicle-dashboard
 router.route("/vehicle").get(admin.vehicleMain);
 
+//owner-details
+
+router.route("/ownerDetails").get(admin.ownerDetails);
+
 //verification owner
 router.route("/verifyOwner/:id").get(admin.ownerVerifyRender);
 router.route("/verifyOwnerButton/:ownerId").get(admin.ownerVerify);

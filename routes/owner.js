@@ -15,5 +15,7 @@ router
     ]),
     owners.register
   );
-// router.route("/test").get(owners.test);
+//route for testing email service:
+router.route("/test").get(owners.test);
+
 module.exports = router;
