@@ -153,7 +153,11 @@
           <% for (let owner of owners){%> <% if (owner.isVerified ==='true') {%>
           <div class="activity-data">
             <div class="data names">
-              <span class="data-list"><%=owner.business%></span>
+              <span class="data-list"
+                ><a href="/api/v1/admin/ownerDetails/<%=owner.email%>"
+                  ><%=owner.business%></a
+                ></span
+              >
             </div>
             <div class="data email">
               <span class="data-list"><%=owner.email%></span>

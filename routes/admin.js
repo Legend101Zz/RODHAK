@@ -16,7 +16,7 @@ router.route("/vehicle").get(admin.vehicleMain);
 
 //owner-details
 
-router.route("/ownerDetails").get(admin.ownerDetails);
+router.route("/ownerDetails/:mail").get(admin.ownerDetails);
 
 //verification owner
 router.route("/verifyOwner/:id").get(admin.ownerVerifyRender);

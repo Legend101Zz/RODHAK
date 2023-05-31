@@ -228,5 +228,16 @@ module.exports.loginVerify = async (req, res, next) => {
 //admin owner dashboard
 
 module.exports.ownerDetails = async (req, res, next) => {
-  res.render("admin/individualDetails");
+  const admin = req.session.adminId;
+  const email = req.params.mail;
+  console.log(email);
+  if (admin) {
+    const owner = await Owner.findOne({ email: email });
+
+    console.log(owner);
+
+    res.render("admin/individualDetails", { owner: owner });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
 };
