@@ -7,6 +7,24 @@
     <title>Start Trip</title>
      <!----======== CSS ======== -->
      <link rel="stylesheet" href="/stylesheets/start.css" />
+ <!----======== MAPBOX JS ======== -->
+     <script
+id="search-js"
+defer
+src="https://api.mapbox.com/search-js/v1.0.0-beta.16/web.js"
+>
+</script>
+<script>        
+const script = document.getElementById('search-js');
+script.onload = function() {
+mapboxsearch.autofill({
+accessToken: "<%-process.env.MAP_BOX%>",
+options: { country: 'IN'
+}
+});
+
+};
+</script>
 </head>
 <body>
     <div class="form">
@@ -23,14 +41,17 @@
                 <label>
                   
                 </label>
-                <input type="text" name="start" required autocomplete="off" placeholder="Start Location Name" />
+                <input name="start" autocomplete="shipping address-line1" type="text" placeholder="Start Location Name">
+               
+              
+
               </div>
           
               <div class="field-wrap">
                 <label>
                   
                 </label>
-                <input type="text" name="start" required autocomplete="off" placeholder="State" />
+                <input type="text" name="start" required autocomplete="on" placeholder="State" />
               </div>
             </div>
             <div class="top-row">
@@ -38,14 +59,14 @@
                 <label>
                   
                 </label>
-                <input type="text" name="end" required autocomplete="off" placeholder="End Location Name" />
+                <input type="text" name="end" required autocomplete="shipping address-line1" placeholder="End Location Name" />
               </div>
           
               <div class="field-wrap">
                 <label>
                   
                 </label>
-                <input type="text" name="end" required autocomplete="off" placeholder="State" />
+                <input type="text" name="end" required autocomplete="on " placeholder="State" />
               </div>
             </div>
   
@@ -64,6 +85,7 @@
             </div>
             
             <button type="submit" class="button button-block"/>Get Started</button>
+ 
             
             </form>
   
@@ -90,7 +112,7 @@
             
             <p class="forgot"><a href="#">Forgot Password?</a></p>
             
-            <button class="button button-block"/>Log In</button>
+            <button class="button button-block">Log In</button>
             
             </form>
   
@@ -99,5 +121,6 @@
         </div><!-- tab-content -->
         
   </div> <!-- /form -->
+
 </body>
 </html>

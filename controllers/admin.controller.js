@@ -241,3 +241,35 @@ module.exports.ownerDetails = async (req, res, next) => {
     res.redirect("/api/v1/admin/login");
   }
 };
+
+// edit Owner
+
+module.exports.ownerEdit = async (req, res, next) => {
+  const admin = req.session.adminId;
+  const id = req.params.id;
+  if (admin) {
+    const owner = await Owner.findById(id);
+    res.render("admin/editOwner", { owner: owner });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
+};
+
+module.exports.ownerEditPost = async (req, res, next) => {
+  const admin = req.session.adminId;
+  const id = req.params.id;
+  const { username, phone, business } = req.body;
+  if (admin) {
+    console.log(id, username, phone, business);
+    await Owner.findByIdAndUpdate(id, { username, phone, business })
+      .then((result) => {
+        console.log(result);
+        res.redirect(`/api/v1/admin/main`);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  } else {
+    res.redirect("/api/v1/admin/login");
+  }
+};

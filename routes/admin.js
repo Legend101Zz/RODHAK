@@ -28,6 +28,10 @@ router.route("/verifyDriverButton/:driverId").get(admin.driverVerify);
 router.route("/verifyVehicle/:id").get(admin.vehicleVerifyRender);
 router.route("/verifyVehicleButton/:vehicleId").get(admin.vehicleVerify);
 
+//editing routes here
+
+router.route("/editOwner/:id").get(admin.ownerEdit).post(admin.ownerEditPost);
+
 //login
 router.route("/login").get(admin.login).post(admin.loginVerify);
 

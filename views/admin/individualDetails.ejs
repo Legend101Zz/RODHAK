@@ -37,6 +37,7 @@
             <a class="text-decoration-none" href="#"><%= owner.username%></a>
           </h5>
           <p class="mt-1 mb-0"><%=owner.business%></p>
+          <p class="mt-1 mb-0"><%=owner.phone%></p>
         </div>
       </div>
 
@@ -49,7 +50,7 @@
         <i class="fa fa-search position-absolute d-block fs-6"></i>
       </div> -->
 
-      <ul class="categories list-unstyled">
+      <ul >
         <li>
           <i class="uil-estate fa-fw"></i
           ><a href="/api/v1/admin/main"> Dashboard</a>
@@ -62,10 +63,13 @@
 
         <li class="">
           <i class="uil-map-marker"></i
-          ><a href="/api/v1/admin/vehicles">Vehicles </a>
+          ><a href="/api/v1/admin/vehicle">Vehicles </a>
         </li>
+        
       </ul>
+      <a href="/api/v1/admin/editOwner/<%=owner._id%>"><button>Edit Owner Details</button> </a>
     </aside>
+
 
     <section id="wrapper">
       <nav class="navbar navbar-expand-md">

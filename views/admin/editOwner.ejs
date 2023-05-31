@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Message</title>
+    <link rel="stylesheet" href="https://codepen.io/gymratpacks/pen/VKzBEp#0" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Nunito:400,300"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" href="/stylesheets/ownerEdit.css" />
+  </head>
+  <body>
+    <div class="row">
+      <div class="col-md-12">
+        <form action="/api/v1/admin/editOwner/<%=owner._id%>" method="POST">
+          <h1>Edit Owner Details</h1>
+
+          <fieldset>
+            <legend><span class="number"></span> Owner Details</legend>
+
+            <label for="stockNum">Username:</label>
+            <input
+              type="text"
+              id="mail"
+              name="username"
+              placeholder="<%=owner.username%>"
+            />
+            <label for="stockNum">Phone:</label>
+            <input
+              type="text"
+              id="mail"
+              name="phone"
+              placeholder="<%=owner.phone%>"
+            />
+            <label for="stockNum">Business Name:</label>
+            <input
+              type="text"
+              id="mail"
+              name="business"
+              placeholder="<%=owner.business%>"
+            />
+          </fieldset>
+
+          <button type="submit">Edit</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
