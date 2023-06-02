@@ -22,7 +22,7 @@ try {
       .catch((err) => {
         console.log(err);
       });
-  }, 10000);
+  }, 2000);
 } catch (error) {
   console.log("There was an error", error);
 }
