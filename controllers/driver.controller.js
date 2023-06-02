@@ -337,17 +337,22 @@ module.exports.map = async (req, res, next) => {
   }
 };
 
-//close
+//trip -finish
 
-module.exports.close = async(req,res,next)=>{
+module.exports.end = async (req, res, next) => {
   const id = req.session.tripId;
-  const trip = await Trip.findById(id);
-  console.log(trip);
+
   if (id) {
-    res.redirect("/api/v1/driver/main", { trip: trip });
+    console.log(id);
+    await Trip.findByIdAndUpdate(id, { isFinished: true })
+      .then((result) => {
+        console.log(result);
+        res.redirect("/api/v1/driver/main");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   } else {
-    res.redirect("/api/v1/driver/main");
+    res.redirect("/api/v1/driver/login");
   }
-
-
-}
+};

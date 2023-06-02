@@ -24,6 +24,7 @@ router.route("/main").get(drivers.main);
 
 router.route("/start").get(drivers.start).post(drivers.trip);
 router.route("/map/:id").post(drivers.map);
+router.route("/end").get(drivers.end);
 
 //test routes
 router.route("/test").get((req, res) => {

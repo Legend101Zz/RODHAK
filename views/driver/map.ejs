@@ -158,7 +158,9 @@
   <body>
     <div class="toggle"></div>
     <div class="stop-btn">
-      <button class="button-24" role="button">Stop Trip</button>
+      <button class="button-24" role="button">
+        <a href="/api/v1/driver/end">Stop Trip </a>
+      </button>
     </div>
     <div id="map"></div>
     <div id="speeds">
@@ -229,11 +231,12 @@
         const lat = position.coords.latitude;
         const speed = position.coords.speed;
         const data = { long, lat, speed };
-
+        // setupMap([position.coords.longitude, position.coords.latitude]);
         const exact = document.getElementById("speed");
         console.log(position.coords.heading);
         if (position.coords.heading) {
           exact.innerHTML = `${position.coords.heading}`;
+          postJSON({ data: data });
           setupMap([position.coords.longitude, position.coords.latitude]);
         } else {
           exact.innerHTML = "0";
@@ -243,8 +246,6 @@
 
         // const pointer = [long, lat];
         // console.log(data);
-
-        // postJSON({ data: data });
       }
 
       function errorApi(err) {
