@@ -225,29 +225,6 @@
         }
       }
 
-      function successApi(position) {
-        console.log(position.coords);
-        const long = position.coords.longitude;
-        const lat = position.coords.latitude;
-        const speed = position.coords.speed;
-        const data = { long, lat, speed };
-        // setupMap([position.coords.longitude, position.coords.latitude]);
-        const exact = document.getElementById("speed");
-        console.log(position.coords.heading);
-        if (position.coords.heading) {
-          exact.innerHTML = `${position.coords.heading}`;
-          postJSON({ data: data });
-          setupMap([position.coords.longitude, position.coords.latitude]);
-        } else {
-          exact.innerHTML = "0";
-        }
-
-        return data;
-
-        // const pointer = [long, lat];
-        // console.log(data);
-      }
-
       function errorApi(err) {
         setupMap([77.170973, 31.104153]);
         console.log(err);
@@ -284,32 +261,57 @@
         const nav = new mapboxgl.NavigationControl();
         map.addControl(nav);
 
-        const geojson = {
-          type: "FeatureCollection",
-          features: [
-            {
-              type: "Feature",
-              geometry: {
-                type: "Point",
-                coordinates: center,
-              },
-              properties: {
-                title: "Rodhak",
-                description: "Your Current Location",
-              },
-            },
-          ],
-        };
-        // add markers to map
-        for (const feature of geojson.features) {
-          // create a HTML element for each feature
-          const el = document.createElement("div");
-          el.className = "marker";
+        function successApi(position) {
+          console.log(position.coords);
+          const long = position.coords.longitude;
+          const lat = position.coords.latitude;
+          const speed = position.coords.speed;
+          const data = { long, lat, speed };
+          // setupMap([position.coords.longitude, position.coords.latitude]);
+          const exact = document.getElementById("speed");
+          console.log(position.coords.heading);
+          if (position.coords.heading) {
+            exact.innerHTML = `${position.coords.heading}`;
+            postJSON({ data: data });
 
-          // make a marker for each feature and add to the map
-          new mapboxgl.Marker(el)
-            .setLngLat(feature.geometry.coordinates)
-            .addTo(map);
+            const geojson = {
+              type: "FeatureCollection",
+              features: [
+                {
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: [
+                      position.coords.longitude,
+                      position.coords.latitude,
+                    ],
+                  },
+                  properties: {
+                    title: "Rodhak",
+                    description: "Your Current Location",
+                  },
+                },
+              ],
+            };
+            // add markers to map
+            for (const feature of geojson.features) {
+              // create a HTML element for each feature
+              const el = document.createElement("div");
+              el.className = "marker";
+
+              // make a marker for each feature and add to the map
+              new mapboxgl.Marker(el)
+                .setLngLat(feature.geometry.coordinates)
+                .addTo(map);
+            }
+          } else {
+            exact.innerHTML = "0";
+          }
+
+          // return data;
+
+          // const pointer = [long, lat];
+          // console.log(data);
         }
       }
     </script>
