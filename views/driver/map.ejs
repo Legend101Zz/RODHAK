@@ -108,16 +108,7 @@
       .button-24:active {
         opacity: 0.5;
       }
-      @media screen and (max-width: 786px) {
-        .hareKrishna {
-          /* position: absolute;
-          left: -100%; */
-          display: none;
-        }
-        .mapboxgl-ctrl-directions.mapboxgl-ctrl {
-          display: none;
-        }
-      }
+
       .hareKrishna {
         /* position: absolute;
           left: -100%; */
@@ -225,13 +216,18 @@
         }
       }
 
+      function successApi(position) {
+        // console.log(position);
+        // setupMap([position.coords.longitude, position.coords.latitude]);
+      }
+
       function errorApi(err) {
         setupMap([77.170973, 31.104153]);
         console.log(err);
       }
 
       function successLocation(position) {
-        console.log(position);
+        console.log(position, "here location");
         setupMap([position.coords.longitude, position.coords.latitude]);
       }
 
@@ -251,6 +247,10 @@
         const directions = new MapboxDirections({
           accessToken: mapboxgl.accessToken,
           unit: "metric",
+          controls: {
+            inputs: false,
+          },
+
           interactive: false,
         });
 
@@ -262,7 +262,7 @@
         map.addControl(nav);
 
         function successApi(position) {
-          console.log(position.coords);
+          console.log(position.coords, "inside map");
           const long = position.coords.longitude;
           const lat = position.coords.latitude;
           const speed = position.coords.speed;
@@ -313,6 +313,7 @@
           // const pointer = [long, lat];
           // console.log(data);
         }
+        // successApi();
       }
     </script>
   </body>
