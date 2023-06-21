@@ -332,7 +332,7 @@ module.exports.map = async (req, res, next) => {
   console.log(trip);
 
   if (id) {
-    res.render("driver/map", { trip: trip });
+    res.render("driver/newMap", { trip: trip });
   } else {
     res.redirect("/api/v1/driver/login");
   }

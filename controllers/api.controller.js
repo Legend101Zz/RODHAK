@@ -10,12 +10,12 @@ var mongoose = require("mongoose");
 
 module.exports.api = async (req, res, next) => {
   console.log(req.session.tripId);
-  const id = req.session.tripId;
+  const id = req.body.tripId;
   const longitude = req.body.data.long;
   const latitude = req.body.data.lat;
   const speed = req.body.data.speed;
   const coordinates = [longitude, latitude];
-  console.log(coordinates);
+  console.log("coords__API__STARTED=--->", coordinates);
   await Trip.findOneAndUpdate(
     { _id: id },
     { currentCoordinates: coordinates, Speed: speed }

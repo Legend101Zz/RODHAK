@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map</title>
+    <link rel="stylesheet" href="/stylesheets/driverMap.css" />
+  </head>
+  <body>
+    <div class="body">
+      <span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+      <div class="base">
+        <span></span>
+        <div class="face"></div>
+      </div>
+    </div>
+    <div class="longfazers">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <h1>YOUR TRIP HAS STARTED</h1>
+    <a
+      href="https://legend101zz.github.io/DrowsinessMonitoring/"
+      style="
+        display: inline-block;
+        margin-top: 10px;
+
+        float: left;
+      "
+    >
+      <button
+        style="
+          background-color: #007bff;
+          color: #fff;
+          border: none;
+          padding: 10px 20px;
+          position: absolute;
+          border-radius: 4px;
+          font-size: 16px;
+          float: left;
+          z-index: 9999;
+        "
+      >
+        Start Drowsiness Check
+      </button>
+    </a>
+    <br />
+    <a
+      href="/api/v1/driver/end"
+      style="display: inline-block; margin-top: 10px; float: left"
+    >
+      <button
+        style="
+          background-color: #ff4742;
+          color: #fff;
+          border: none;
+          float: left;
+          position: absolute;
+          margin-left: 250px;
+          padding: 10px 20px;
+          border-radius: 4px;
+          font-size: 16px;
+          z-index: 9999;
+        "
+      >
+        End trip
+      </button>
+    </a>
+    <script>
+      tripId = "<%-trip._id%>";
+      navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
+        enableHighAccuracy: true,
+      });
+
+      navigator.geolocation.watchPosition(successApi, errorApi, {
+        enableHighAccuracy: true,
+      });
+
+      //api-post for sending driver's coord
+      async function postJSON(data) {
+        try {
+          await fetch("https://rodhak11.onrender.com/himraahi/coordinate", {
+            method: "POST", // or 'PUT'
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((result) => {
+              const result2 = result.json();
+              console.log("Success:", result2);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } catch (error) {
+          console.log("Error:", error);
+        }
+      }
+
+      async function successApi(position) {
+        const long = position.coords.longitude;
+        const lat = position.coords.latitude;
+        const speed = position.coords.speed;
+        const data = { long, lat, speed, tripId };
+        // console.log(position);
+        // setupMap([position.coords.longitude, position.coords.latitude]);
+        await postJSON({ data: data });
+      }
+
+      function errorApi(err) {
+        console.log(err);
+      }
+
+      async function successLocation(position) {
+        const long = position.coords.longitude;
+        const lat = position.coords.latitude;
+        const speed = position.coords.speed;
+        const data = { long, lat, speed, tripId };
+        console.log(position, data, tripId, "here location");
+        await postJSON({ data: data });
+      }
+
+      function errorLocation() {}
+    </script>
+  </body>
+</html>

@@ -43,11 +43,10 @@ app.use(session(sessionConfig));
 
 //TESTING-ROUTES
 
-/* app.get("/", (req, res) => {
- res.render("map");
- });
+app.get("/", (req, res) => {
+  res.render("driver/newMap");
+});
 
- */
 app.get("/test", (req, res) => {
   res.render("allMap");
 });
