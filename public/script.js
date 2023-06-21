@@ -31,24 +31,7 @@ function setupMap(center) {
     center: center,
     zoom: 15,
   });
-  // console.log(map);
 
-  // const route = new MapboxDirections({
-  //   accessToken: mapboxgl.accessToken,
-  //   unit: "metric",
-  //   controls: {
-  //     inputs: false,
-  //     instructions: false,
-  //   },
-
-  //   interactive: false,
-  //   congestion: true,
-  // });
-
-  // console.log(route.actions.setOptions);
-  // // route.controls.instructions = false;
-  // route.setOrigin(start);
-  // route.setDestination(end);
 
   map.on("load", async () => {
     // Get the initial location of the Bus;
@@ -65,11 +48,6 @@ function setupMap(center) {
       type: "symbol",
       source: "bus",
       layout: {
-        // This icon is a part of the Mapbox Streets style.
-        // To view all images available in a Mapbox style, open
-        // the style in Mapbox Studio and click the "Images" tab.
-        // To add a new image to the style at runtime see
-        // https://docs.mapbox.com/mapbox-gl-js/example/add-image/
         "icon-image": "rocket",
       },
     });
@@ -97,7 +75,7 @@ function setupMap(center) {
     }, 2000);
 
     async function getLocation(updateSource) {
-      // Make a GET request to the API and return the location of the ISS.
+      // Make a GET request to the API and return the location of the Bus.
       try {
         const response = await fetch(url, { method: "GET" });
         const data = await response.json();
@@ -138,53 +116,4 @@ function setupMap(center) {
     }
   });
 
-  // updating the bus location
-  // try {
-  //   setInterval(() => {
-  //     fetch(url, { method: "GET" })
-  //       .then(async (response) => {
-  //         const data1 = await response.json();
-  //         console.log(response, data1);
-
-  //         const geojson = {
-  //           type: "FeatureCollection",
-  //           features: [
-  //             {
-  //               type: "Feature",
-  //               geometry: {
-  //                 type: "Point",
-  //                 coordinates: data1.data.currentCoordinates,
-  //               },
-  //               properties: {
-  //                 title: "Rodhak",
-  //                 description: "Driver's Current Location",
-  //               },
-  //             },
-  //           ],
-  //         };
-  //         // add markers to map
-  //         for (const feature of geojson.features) {
-  //           // create a HTML element for each feature
-  //           const el = document.createElement("div");
-  //           el.className = "marker";
-
-  //           // make a marker for each feature and add to the map
-  //           new mapboxgl.Marker(el)
-  //             .setLngLat(feature.geometry.coordinates)
-  //             .setPopup(
-  //               new mapboxgl.Popup({ offset: 25 }) // add popups
-  //                 .setHTML(
-  //                   `<h3>${feature.properties.title}</h3><p>${feature.properties.description}</p>`
-  //                 )
-  //             )
-  //             .addTo(map);
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.log(err);
-  //       });
-  //   }, 2000);
-  // } catch (error) {
-  //   console.log("There was an error", error);
-  // }
-}
+  
