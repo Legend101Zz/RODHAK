@@ -32,7 +32,6 @@ function setupMap(center) {
     zoom: 15,
   });
 
-
   map.on("load", async () => {
     // Get the initial location of the Bus;
     const geojson = await getLocation();
@@ -115,5 +114,4 @@ function setupMap(center) {
       }
     }
   });
-
-  
+}
