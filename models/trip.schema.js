@@ -11,10 +11,7 @@ const TripSchema = new Schema({
     autopopulate: true,
   },
   Vehicle: {
-    type: Schema.Types.ObjectId,
-    ref: "Vehicle",
-
-    autopopulate: true,
+    type: String,
   },
   Start: { type: String },
   End: { type: String },

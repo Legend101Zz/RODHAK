@@ -237,6 +237,7 @@ module.exports.trip = async (req, res, next) => {
         const trip = new Trip({
           isPublic: check,
           Driver: id,
+          Vehicle: vehicle.vehicleNum,
           coordinateStart: starting,
           coordinateEnd: ending,
           Start: start,

@@ -1,6 +1,7 @@
 const Owner = require("../models/owner.schema");
 const Driver = require("../models/driver.schema");
 const Admin = require("../models/admin.schema");
+const Vehicle = require("../models/vehicle.schema");
 const Trip = require("../models/trip.schema");
 const bcrypt = require("bcrypt");
 var mongoose = require("mongoose");
@@ -87,6 +88,8 @@ module.exports.directions = async (req, res, next) => {
 //getting singleTrip api for map
 module.exports.trip = async (req, res, next) => {
   const trip = await Trip.findById(req.params.tripId);
+  const vehicle = await Vehicle.find({ Trip: trip._id });
+  console.log("Vehicle--->", vehicle[0].vehicleNum);
   if (trip) {
     res.status(200).send({
       message: "Success",
@@ -94,6 +97,7 @@ module.exports.trip = async (req, res, next) => {
         currentCoordinates: trip.currentCoordinates,
         Start: trip.coordinateStart,
         End: trip.coordinateEnd,
+        Vehicle: vehicle[0].vehicleNum,
       },
     });
   } else {
@@ -113,7 +117,7 @@ module.exports.singleTrip = async (req, res, next) => {
     const trip = await Trip.findById(check);
     console.log(trip);
     if (trip) {
-      res.render("map");
+      res.render("map", { env: process.env.MAP_BOX });
     } else {
       res.status(401).send({ message: "Invalid Trip id" });
     }

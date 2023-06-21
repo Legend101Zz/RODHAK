@@ -46,10 +46,11 @@ app.use(session(sessionConfig));
 /* app.get("/", (req, res) => {
  res.render("map");
  });
- app.get("/test", (req, res) => {
-  res.render("getMap");
- });
+
  */
+app.get("/test", (req, res) => {
+  res.render("allMap");
+});
 
 //MAIN-ROUTES
 

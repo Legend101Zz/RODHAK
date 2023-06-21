@@ -55,6 +55,7 @@ function setupMap(center) {
     const updateSource = setInterval(async () => {
       const geojson = await getLocation(updateSource);
       map.getSource("bus").setData(geojson);
+      console.log(map, map.getSource("bus"));
       for (const feature of geojson.features) {
         // create a HTML element for each feature
         const el = document.createElement("div");
