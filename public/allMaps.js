@@ -40,7 +40,7 @@ function setupMap(center) {
   console.log(center);
   const map = new mapboxgl.Map({
     container: "map",
-    style: "mapbox://styles/mapbox/streets-v12",
+    style: "mapbox://styles/mapbox/navigation-day-v1",
     center: center,
     zoom: 15,
   });
@@ -56,13 +56,13 @@ function setupMap(center) {
           const data = await response.json();
           const buses = data.data;
 
-          map.flyTo({
-            center: [
-              data.data[1].currentCoordinates[0],
-              data.data[1].currentCoordinates[1],
-            ],
-            speed: 0.5,
-          });
+          //   map.flyTo({
+          //     center: [
+          //       data.data[1].currentCoordinates[0],
+          //       data.data[1].currentCoordinates[1],
+          //     ],
+          //     speed: 0.5,
+          //   });
           //   console.log(buses, "here__indata");
           //   const BusCoords = buses.map((result) => result.currentCoordinates);
           //   const BusStart = buses.map((result) => result.Start);
@@ -112,7 +112,7 @@ function setupMap(center) {
                   .setPopup(
                     new mapboxgl.Popup({ offset: 25 }) // add popups
                       .setHTML(
-                        `<h3>${feature.properties.title}</h3><br/><p>Start Point: ${feature.properties.start}</p><br/><p>End Point: ${feature.properties.end}</p> ,`
+                        `<h3>${feature.properties.title}</h3><br/><p>From: ${feature.properties.start}</p><p>To: ${feature.properties.end}</p> ,`
                       )
                   )
                   .addTo(map);
