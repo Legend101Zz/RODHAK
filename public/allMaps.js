@@ -42,7 +42,7 @@ function setupMap(center) {
     container: "map",
     style: "mapbox://styles/mapbox/navigation-day-v1",
     center: center,
-    zoom: 15,
+    zoom: 5,
   });
 
   map.on("load", async () => {
