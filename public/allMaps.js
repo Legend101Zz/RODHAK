@@ -94,6 +94,8 @@ function setupMap(center) {
                         title: buses[i].Vehicle,
                         start: buses[i].Start,
                         end: buses[i].End,
+                        type: buses[i].Type,
+                        link: buses[i]._id,
                       },
                     },
                   ],
@@ -104,15 +106,23 @@ function setupMap(center) {
               for (const feature of bus.features) {
                 // create a HTML element for each feature
                 const el = document.createElement("div");
-                el.className = "marker";
-
+                if (feature.properties.type == "bus") {
+                  el.className = "marker4";
+                } else if (feature.properties.type == "car") {
+                  el.className = "marker2";
+                } else if (feature.properties.type == "volvo") {
+                  el.className = "marker3";
+                } else {
+                  el.className = "marker";
+                }
                 // make a marker for each feature and add to the map
                 new mapboxgl.Marker(el)
                   .setLngLat(feature.geometry.coordinates)
                   .setPopup(
                     new mapboxgl.Popup({ offset: 25 }) // add popups
                       .setHTML(
-                        `<h3>${feature.properties.title}</h3><br/><p>From: ${feature.properties.start}</p><p>To: ${feature.properties.end}</p> ,`
+                        `<h3>${feature.properties.title}</h3><br/><p>From: ${feature.properties.start}</p><p>To: ${feature.properties.end}</p> <br/> 
+                        <a>Link : http://localhost:3000/trip/${feature.properties.link}</a> ,`
                       )
                   )
                   .addTo(map);

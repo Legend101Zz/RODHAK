@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const TripSchema = new Schema({
   isFinished: { type: Boolean, default: false },
   isPublic: { type: Boolean, default: false },
+  Type: { type: String, required: true },
   Driver: {
     type: Schema.Types.ObjectId,
     ref: "Driver",

@@ -48,7 +48,7 @@
           z-index: 9999;
         "
       >
-        Start Drowsiness Check
+        Jaago
       </button>
     </a>
     <br />
@@ -84,26 +84,24 @@
       });
 
       //api-post for sending driver's coord
-      async function postJSON(data) {
-        try {
-          await fetch("https://rodhak11.onrender.com/himraahi/coordinate", {
-            method: "POST", // or 'PUT'
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
+      function postJSON(data) {
+        console.log("inside__postJson");
+
+        fetch("https://rodhak-111.onrender.com/himraahi/coordinate", {
+          method: "POST", // or 'PUT'
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((result) => {
+            const result2 = result.json();
+            console.log("Success:", result2);
           })
-            .then((result) => {
-              const result2 = result.json();
-              console.log("Success:", result2);
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        } catch (error) {
-          console.log("Error:", error);
-        }
+          .catch((err) => {
+            console.log(err);
+          });
       }
 
       async function successApi(position) {
@@ -111,9 +109,9 @@
         const lat = position.coords.latitude;
         const speed = position.coords.speed;
         const data = { long, lat, speed, tripId };
-        // console.log(position);
+        console.log("successAPI__>", position);
         // setupMap([position.coords.longitude, position.coords.latitude]);
-        await postJSON({ data: data });
+        start(data);
       }
 
       function errorApi(err) {
@@ -126,10 +124,14 @@
         const speed = position.coords.speed;
         const data = { long, lat, speed, tripId };
         console.log(position, data, tripId, "here location");
-        await postJSON({ data: data });
+        start(data);
       }
 
       function errorLocation() {}
+      function start(data) {
+        console.log("function__started");
+        postJSON({ data: data });
+      }
     </script>
   </body>
 </html>

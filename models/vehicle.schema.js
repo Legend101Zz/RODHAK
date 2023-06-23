@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const VehicleSchema = new Schema({
   name: String,
   vehicleNum: { type: String, required: true },
-
+  Type: { type: String, required: true },
   Trip: [
     {
       type: Schema.Types.ObjectId,

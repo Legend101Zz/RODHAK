@@ -198,7 +198,6 @@ module.exports.trip = async (req, res, next) => {
     const start = req.body.start[0] + "," + req.body.start[1];
     const end = req.body.end[0] + "," + req.body.end[1];
     const veh = req.body.vehicle;
-
     var numLower = req.body.vehicle.toLowerCase();
     const num = numLower.replace(/\W/g, "");
     const vehicle = await Vehicle.findOne({ vehicleNum: num });
@@ -238,6 +237,7 @@ module.exports.trip = async (req, res, next) => {
           isPublic: check,
           Driver: id,
           Vehicle: vehicle.vehicleNum,
+          Type: vehicle.Type,
           coordinateStart: starting,
           coordinateEnd: ending,
           Start: start,
@@ -267,6 +267,7 @@ module.exports.trip = async (req, res, next) => {
                 location1: start,
                 location2: end,
                 veh: veh,
+                type: vehicle.Type,
                 id: result._id,
               });
             }
@@ -279,6 +280,8 @@ module.exports.trip = async (req, res, next) => {
         const trip = new Trip({
           isPublic: check,
           Driver: id,
+          Vehicle: vehicle.vehicleNum,
+          Type: vehicle.Type,
           coordinateStart: starting,
           coordinateEnd: ending,
           Start: start,
@@ -308,6 +311,7 @@ module.exports.trip = async (req, res, next) => {
                 location1: start,
                 location2: end,
                 veh: veh,
+                type: vehicle.Type,
                 id: result._id,
               });
             }
@@ -328,11 +332,12 @@ module.exports.trip = async (req, res, next) => {
 
 module.exports.map = async (req, res, next) => {
   const id = req.session.tripId;
+  const type = req.body.type;
   const trip = await Trip.findById(id);
   console.log(trip);
 
   if (id) {
-    res.render("driver/newMap", { trip: trip });
+    res.render("driver/newMap", { trip: trip, type: type });
   } else {
     res.redirect("/api/v1/driver/login");
   }

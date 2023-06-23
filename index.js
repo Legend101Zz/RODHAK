@@ -43,11 +43,12 @@ app.use(session(sessionConfig));
 
 //TESTING-ROUTES
 
-app.get("/", (req, res) => {
-  res.render("driver/newMap");
-});
+// app.get("/", (req, res) => {
+//   res.render("driver/newMap");
+// });
 
-app.get("/test", (req, res) => {
+// Map Public view
+app.get("/map", (req, res) => {
   res.render("allMap");
 });
 
