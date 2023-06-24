@@ -1,24 +1,30 @@
 @import "compass/css3";
+
 *,
 *:before,
 *:after {
   box-sizing: border-box;
 }
+
 html {
   overflow-y: scroll;
 }
+
 body {
   background: #c1bdba;
   font-family: "Titillium Web", sans-serif;
 }
+
 a {
   text-decoration: none;
   color: #1ab188;
   transition: 0.5s ease;
 }
+
 a:hover {
   color: #179b77;
 }
+
 .form {
   background: rgba(19, 35, 47, 0.9);
   padding: 40px;
@@ -27,16 +33,19 @@ a:hover {
   border-radius: 4px;
   box-shadow: 0 4px 10px 4px rgba(19, 35, 47, 0.3);
 }
+
 .tab-group {
   list-style: none;
   padding: 0;
   margin: 0 0 40px 0;
 }
+
 .tab-group:after {
   content: "";
   display: table;
   clear: both;
 }
+
 .tab-group li a {
   display: block;
   text-decoration: none;
@@ -50,23 +59,28 @@ a:hover {
   cursor: pointer;
   transition: 0.5s ease;
 }
+
 .tab-group li a:hover {
   background: #179b77;
   color: #fff;
 }
+
 .tab-group .active a {
   background: #1ab188;
   color: #fff;
 }
+
 .tab-content > div:last-child {
   display: none;
 }
+
 h1 {
   text-align: center;
   color: #fff;
   font-weight: 300;
   margin: 0 0 40px;
 }
+
 label {
   position: absolute;
   transform: translateY(6px);
@@ -77,21 +91,26 @@ label {
   pointer-events: none;
   font-size: 22px;
 }
+
 label .req {
   margin: 2px;
   color: #1ab188;
 }
+
 label.active {
   transform: translateY(50px);
   left: 2px;
   font-size: 14px;
 }
+
 label.active .req {
   opacity: 0;
 }
+
 label.highlight {
   color: #fff;
 }
+
 input,
 textarea {
   font-size: 22px;
@@ -105,33 +124,50 @@ textarea {
   color: #fff;
   border-radius: 0;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  z-index: 1;
+  line-height: 1.5;
 }
+
 input:focus,
 textarea:focus {
   outline: 0;
   border-color: #1ab188;
+  z-index: 2;
 }
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
 textarea {
   border: 2px solid #a0b3b0;
   resize: vertical;
 }
+
 .field-wrap {
   position: relative;
   margin-bottom: 40px;
 }
+
 .top-row:after {
   content: "";
   display: table;
   clear: both;
 }
+
 .top-row > div {
   float: left;
   width: 48%;
   margin-right: 4%;
 }
+
 .top-row > div:last-child {
   margin: 0;
 }
+
 .button {
   border: 0;
   outline: none;
@@ -146,15 +182,72 @@ textarea {
   transition: all 0.5s ease;
   -webkit-appearance: none;
 }
+
 .button:hover,
 .button:focus {
   background: #179b77;
 }
+
 .button-block {
   display: block;
   width: 100%;
 }
+
 .forgot {
   margin-top: -20px;
   text-align: right;
+}
+
+.checkbox-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.checkbox-wrap input[type="checkbox"] {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.checkbox-wrap label {
+  position: relative;
+  padding-left: 30px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.checkbox-wrap label:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #a0b3b0;
+  border-radius: 4px;
+}
+
+.checkbox-wrap input[type="checkbox"]:checked + label:before {
+  background: #1ab188;
+  border-color: #1ab188;
+}
+
+.checkbox-wrap label:after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.checkbox-wrap input[type="checkbox"]:checked + label:after {
+  opacity: 1;
 }

@@ -6,7 +6,7 @@ const Trip = require("../models/trip.schema");
 const bcrypt = require("bcrypt");
 var mongoose = require("mongoose");
 
-// api for getting current coordinates
+// api for updating current coordinates
 
 module.exports.api = async (req, res, next) => {
   console.log(req.session.tripId);
@@ -76,16 +76,7 @@ module.exports.trips = async (req, res, next) => {
 
 //api for giving current coordinates
 
-module.exports.directions = async (req, res, next) => {
-  const trip = await Trip.findById(req.params.id);
-  if (trip) {
-    res.status(200).send({ message: "Success", data: trip });
-  } else {
-    res.status(401).send({ message: "Invalid Trip id" });
-  }
-};
-
-//getting singleTrip api for map
+//getting singleTrip data for map
 module.exports.trip = async (req, res, next) => {
   const trip = await Trip.findById(req.params.tripId);
   const vehicle = await Vehicle.find({ Trip: trip._id });
@@ -138,5 +129,16 @@ module.exports.ownerData = async (req, res, next) => {
     res.status(200).send({ message: "success", data: owner });
   } else {
     res.status(401).send({ message: "Invalid Owner id" });
+  }
+};
+
+//depreciated apis
+
+module.exports.directions = async (req, res, next) => {
+  const trip = await Trip.findById(req.params.id);
+  if (trip) {
+    res.status(200).send({ message: "Success", data: trip });
+  } else {
+    res.status(401).send({ message: "Invalid Trip id" });
   }
 };

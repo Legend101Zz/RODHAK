@@ -66,10 +66,44 @@
         text-align: center;
         font-family: "Open Sans", sans-serif;
       }
+
+      /* Custom styles for the button */
+      .button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 999;
+        padding: 10px 20px;
+        background-color: #e74c3c;
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        font-family: "Arial", sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .button:hover {
+        background-color: #c0392b;
+      }
+
+      @media screen and (max-width: 768px) {
+        /* Adjust styles for smaller screens */
+        .button {
+          top: 5px;
+          left: 5px;
+          font-size: 12px;
+        }
+      }
     </style>
     <script type="module" src="/allMaps.js"></script>
   </head>
   <body>
     <div id="map"></div>
+    <!-- Button with link to search page -->
+    <a href="https://www.dndrodhak.live/" class="button">See all Trips</a>
   </body>
 </html>

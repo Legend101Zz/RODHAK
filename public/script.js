@@ -12,8 +12,10 @@ try {
     .then(async (response) => {
       const data1 = await response.json();
       console.log(response, data1);
-      const center = [data1.longitude, data1.latitude];
+      const centerForTest = [data1.longitude, data1.latitude];
+
       setupMap(data1.data.currentCoordinates, data1.data.Start, data1.data.End);
+      // setupMap(centerForTest);
       // setupMap(center);
     })
     .catch((err) => {
@@ -36,42 +38,36 @@ function setupMap(center) {
     // Get the initial location of the Bus;
     const geojson = await getLocation();
     // Add the Bus location as a source.
-    map.addSource("bus", {
-      type: "geojson",
-      data: geojson,
-    });
 
-    // Add the rocket symbol layer to the map.
-    map.addLayer({
-      id: "bus",
-      type: "symbol",
-      source: "bus",
-      layout: {
-        "icon-image": "rocket",
-      },
+    map.loadImage("/car.png", (error, image) => {
+      if (error) throw error;
+
+      // Add the image to the map style.
+      map.addImage("busNew", image);
+      console.log(image);
+      // Add a layer to use the image to represent the data.
+      map.addSource("busNew", {
+        type: "geojson",
+        data: geojson,
+      });
+
+      // Add the rocket symbol layer to the map.
+      map.addLayer({
+        id: "buses",
+        type: "symbol",
+        source: "busNew",
+        layout: {
+          "icon-image": "bus",
+          "icon-size": 1.25,
+        },
+      });
     });
 
     // Update the source from the API every 2 seconds.
     const updateSource = setInterval(async () => {
       const geojson = await getLocation(updateSource);
-      map.getSource("bus").setData(geojson);
-      console.log(map, map.getSource("bus"));
-      for (const feature of geojson.features) {
-        // create a HTML element for each feature
-        const el = document.createElement("div");
-        el.className = "marker";
-
-        // make a marker for each feature and add to the map
-        new mapboxgl.Marker(el)
-          .setLngLat(feature.geometry.coordinates)
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 }) // add popups
-              .setHTML(
-                `<h3>${feature.properties.title}</h3><p>${feature.properties.description}</p>`
-              )
-          )
-          .addTo(map);
-      }
+      map.getSource("busNew").setData(geojson);
+      console.log(map, map.getSource("busNew"));
     }, 2000);
 
     async function getLocation(updateSource) {
@@ -85,6 +81,8 @@ function setupMap(center) {
           center: [
             data.data.currentCoordinates[0],
             data.data.currentCoordinates[1],
+            // data.longitude,
+            // data.latitude,
           ],
           speed: 0.5,
         });
@@ -99,6 +97,8 @@ function setupMap(center) {
                 coordinates: [
                   data.data.currentCoordinates[0],
                   data.data.currentCoordinates[1],
+                  // data.longitude,
+                  // data.latitude,
                 ],
               },
               properties: {

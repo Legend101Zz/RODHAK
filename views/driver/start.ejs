@@ -1,127 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Start Trip</title>
-     <!----======== CSS ======== -->
-     <link rel="stylesheet" href="/stylesheets/start.css" />
- <!----======== MAPBOX JS ======== -->
-     <script
-id="search-js"
-defer
-src="https://api.mapbox.com/search-js/v1.0.0-beta.16/web.js"
->
-</script>
-<script>        
-const script = document.getElementById('search-js');
-script.onload = function() {
-mapboxsearch.autofill({
-accessToken: "<%-process.env.MAP_BOX%>",
-options: { country: 'IN'
-}
-});
-
-};
-</script>
-</head>
-<body>
+    <link rel="stylesheet" href="/stylesheets/start.css" />
+    <script
+      id="search-js"
+      defer
+      src="https://api.mapbox.com/search-js/v1.0.0-beta.16/web.js"
+    ></script>
+    <script>
+      const script = document.getElementById("search-js");
+      script.onload = function () {
+        mapboxsearch.autofill({
+          accessToken: "<%-process.env.MAP_BOX%>",
+          options: {
+            country: "IN",
+          },
+        });
+      };
+    </script>
+  </head>
+  <body>
     <div class="form">
-
-        
-        <div class="tab-content">
-          <div id="signup">   
-            <h1>A new DAY, a new JOURNEY</h1>
-            
-            <form action="/api/v1/driver/start" method="POST">
-            
+      <div class="tab-content">
+        <div id="signup">
+          <h1>A new DAY, a new JOURNEY</h1>
+          <form action="/api/v1/driver/start" method="POST">
             <div class="top-row">
               <div class="field-wrap">
-                <label>
-                  
-                </label>
-                <input name="start" autocomplete="on" type="text" placeholder="Start Location Name">
-               
-              
-
+                <label for="start-location"> </label>
+                <input
+                  id="start-location"
+                  name="start"
+                  autocomplete="on"
+                  type="text"
+                  placeholder="Start Location Name"
+                />
               </div>
-          
               <div class="field-wrap">
-                <label>
-                  
-                </label>
-                <input type="text" name="start" required autocomplete="on" placeholder="State" />
+                <label for="start-state"> </label>
+                <input
+                  id="start-state"
+                  type="text"
+                  name="start"
+                  required
+                  autocomplete="on"
+                  placeholder="Start State"
+                />
               </div>
             </div>
             <div class="top-row">
               <div class="field-wrap">
-                <label>
-                  
-                </label>
-                <input type="text" name="end" required autocomplete="on" placeholder="End Location Name" />
+                <label for="end-location"> </label>
+                <input
+                  id="end-location"
+                  type="text"
+                  name="end"
+                  required
+                  autocomplete="on"
+                  placeholder="End Location Name"
+                />
               </div>
-          
               <div class="field-wrap">
-                <label>
-                  
-                </label>
-                <input type="text" name="end" required autocomplete="on " placeholder="State" />
+                <label for="end-state"> </label>
+                <input
+                  id="end-state"
+                  type="text"
+                  name="end"
+                  required
+                  autocomplete="on"
+                  placeholder="End State "
+                />
               </div>
             </div>
-  
             <div class="field-wrap">
-              <label>
-               
-              </label>
-              <input type="text" name="vehicle" required autocomplete="off" placeholder="Vehicle no."/>
+              <label for="vehicle-no"> </label>
+              <input
+                id="vehicle-no"
+                type="text"
+                name="vehicle"
+                required
+                autocomplete="off"
+                placeholder="Vehicle No."
+              />
             </div>
-            
+            <div class="field-wrap checkbox-wrap">
+              <input
+                id="is-public"
+                type="checkbox"
+                name="public"
+                autocomplete="off"
+              />
+              <label for="is-public">Is trip Public</label>
+            </div>
+            <br />
+            <button type="submit" class="button button-block">
+              Get Started
+            </button>
+          </form>
+        </div>
+        <div id="login">
+          <h1>Welcome Back!</h1>
+          <form action="/" method="post">
             <div class="field-wrap">
-              <label>
-                Is trip Public<span class="req">*</span>
-              </label>
-              <input type="checkbox" name="public" autocomplete="off"/>
-            </div>
-            <br/>
-            
-            <button type="submit" class="button button-block"/>Get Started</button>
- 
-            
-            </form>
-  
-          </div>
-          
-          <div id="login">   
-            <h1>Welcome Back!</h1>
-            
-            <form action="/" method="post">
-            
-              <div class="field-wrap">
-              <label>
+              <label for="email">
                 Email Address<span class="req">*</span>
               </label>
-              <input type="email"required autocomplete="off"/>
+              <input id="email" type="email" required autocomplete="off" />
             </div>
-            
             <div class="field-wrap">
-              <label>
-                Password<span class="req">*</span>
-              </label>
-              <input type="password"required autocomplete="off"/>
+              <label for="password"> Password<span class="req">*</span> </label>
+              <input
+                id="password"
+                type="password"
+                required
+                autocomplete="off"
+              />
             </div>
-            
             <p class="forgot"><a href="#">Forgot Password?</a></p>
-            
             <button class="button button-block">Log In</button>
-            
-            </form>
-  
-          </div>
-          
-        </div><!-- tab-content -->
-        
-  </div> <!-- /form -->
-
-</body>
+          </form>
+        </div>
+      </div>
+      <!-- tab-content -->
+    </div>
+    <!-- /form -->
+  </body>
 </html>

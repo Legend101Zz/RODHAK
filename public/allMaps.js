@@ -122,7 +122,7 @@ function setupMap(center) {
                     new mapboxgl.Popup({ offset: 25 }) // add popups
                       .setHTML(
                         `<h3>${feature.properties.title}</h3><br/><p>From: ${feature.properties.start}</p><p>To: ${feature.properties.end}</p> <br/> 
-                        <a>Link : http://localhost:3000/trip/${feature.properties.link}</a> ,`
+                        <a href ="https://rodhak11.onrender.com/himraahi/trip/${feature.properties.link}"><b>Link To Trip<b/></a> `
                       )
                   )
                   .addTo(map);
