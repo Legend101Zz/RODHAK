@@ -98,7 +98,7 @@ module.exports.trip = async (req, res, next) => {
 
 //map-rendering
 module.exports.singleTrip = async (req, res, next) => {
-  console.log(req.params.tripId);
+  // console.log(req.params.tripId);
   try {
     const check = req.params.tripId;
     // console.log(mongoose.Types.ObjectId.isValid(req.params.tripId));
@@ -106,9 +106,13 @@ module.exports.singleTrip = async (req, res, next) => {
     // const id = toString(check);
     // console.log(check, id);
     const trip = await Trip.findById(check);
-    console.log(trip);
+    console.log("TRIP__HERE", trip.isFinished);
     if (trip) {
-      res.render("map", { env: process.env.MAP_BOX });
+      if (!trip.isFinished) {
+        res.render("map", { env: process.env.MAP_BOX });
+      } else {
+        res.status(401).send({ message: " Trip is Finished" });
+      }
     } else {
       res.status(401).send({ message: "Invalid Trip id" });
     }
