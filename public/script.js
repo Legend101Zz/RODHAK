@@ -58,7 +58,7 @@ function setupMap(center) {
         source: "busNew",
         layout: {
           "icon-image": "bus",
-          "icon-size": 1.25,
+          "icon-size": 2.25,
         },
       });
     });
