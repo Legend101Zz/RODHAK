@@ -99,6 +99,10 @@
         }
       }
     </style>
+    <script>
+      //putting id from the env in the global execiution context so that it can be accessed by the below allMaps flie
+      var mapId = "<%=env%>";
+    </script>
     <script type="module" src="/allMaps.js"></script>
   </head>
   <body>

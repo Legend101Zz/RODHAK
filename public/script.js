@@ -1,5 +1,4 @@
-mapboxgl.accessToken =
-  "pk.eyJ1IjoibXJpZ2VzaHRoYWt1ciIsImEiOiJjbDdwdjZ2MG4wbGVmM3JzMzVtb2U1MnJ0In0.nbEGuAgv1N1c-tXDyR7d4g";
+mapboxgl.accessToken = mapId;
 
 const queryString = window.location.pathname.split("p");
 console.log(queryString[1], "here");

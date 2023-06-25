@@ -42,6 +42,10 @@
         font-family: "Open Sans", sans-serif;
       }
     </style>
+    <script>
+      //putting id from the env in the global execiution context so that it can be accessed by the below script flie
+      var mapId = "<%=env%>";
+    </script>
     <script type="module" src="/script.js"></script>
   </head>
   <body>

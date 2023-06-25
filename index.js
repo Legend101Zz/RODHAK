@@ -49,7 +49,7 @@ app.use(session(sessionConfig));
 
 // Map Public view
 app.get("/map", (req, res) => {
-  res.render("allMap");
+  res.render("allMap", { env: process.env.MAP_BOX });
 });
 
 //MAIN-ROUTES
