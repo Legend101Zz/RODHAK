@@ -129,25 +129,32 @@ module.exports.login = async (req, res, next) => {
 module.exports.loginVerify = async (req, res, next) => {
   const password = req.body.password;
   const email = req.body.mail;
-  const driver = await Driver.findOne({ email: email });
-  console.log(req.body, driver.password);
-  if (driver) {
-    console.log(driver);
-    const validPassword = await bcrypt.compare(password, driver.password);
-    console.log(validPassword);
-    if (validPassword) {
-      // console.log("hit");
+  try {
+    const driver = await Driver.findOne({ email: email });
+    console.log(req.body, driver.password);
+    if (driver) {
+      console.log(driver);
+      const validPassword = await bcrypt.compare(password, driver.password);
+      console.log(validPassword);
+      if (validPassword) {
+        // console.log("hit");
 
-      req.session.driverId = driver._id;
-      res.redirect("/api/v1/driver/main");
+        req.session.driverId = driver._id;
+        res.redirect("/api/v1/driver/main");
+      } else {
+        // console.log("here");
+        res.status(201).json({
+          type: "failure",
+          message: "Enter valid credentials",
+        });
+      }
     } else {
-      // console.log("here");
       res.status(201).json({
         type: "failure",
         message: "Enter valid credentials",
       });
     }
-  } else {
+  } catch {
     res.status(201).json({
       type: "failure",
       message: "Enter valid credentials",
