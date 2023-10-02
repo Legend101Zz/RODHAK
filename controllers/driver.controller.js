@@ -224,16 +224,6 @@ module.exports.trip = async (req, res, next) => {
     const starting = geoData.body.features[0].geometry.coordinates;
     const ending = geoData2.body.features[0].geometry.coordinates;
 
-    const dist1 = [
-      geoData.body.features[0].geometry.coordinates[1],
-      geoData.body.features[0].geometry.coordinates[0],
-    ];
-
-    const dist2 = [
-      geoData2.body.features[0].geometry.coordinates[1],
-      geoData2.body.features[0].geometry.coordinates[0],
-    ];
-
     const distance = turf.default(starting, ending, { units: "kilometers" });
 
     console.log(distance, "km");
@@ -367,5 +357,204 @@ module.exports.end = async (req, res, next) => {
       });
   } else {
     res.redirect("/api/v1/driver/login");
+  }
+};
+
+// --------------DRIVER APIS-----------------
+
+module.exports.loginVerifyApi = async (req, res, next) => {
+  const password = req.body.password;
+  const email = req.body.mail;
+
+  try {
+    const driver = await Driver.findOne({ email: email }).select(
+      "-password -legal"
+    );
+
+    if (driver) {
+      // Count the total number of Trip objects
+      const totalTrips = driver.Trip.length;
+
+      // Extract the 'url' from each 'images' object
+      const imageUrls = driver.images.map((image) => image.url);
+
+      return res.status(200).json({
+        message: "success",
+        data: {
+          _id: driver._id,
+          name: driver.name,
+          username: driver.username,
+          email: driver.email,
+          phone: driver.phone,
+          age: driver.age,
+          isVerified: driver.isVerified,
+          totalTrips: totalTrips,
+          imageUrls: imageUrls,
+        },
+      });
+    } else {
+      res.status(201).json({
+        type: "failure",
+        message: "Enter valid credentials",
+      });
+    }
+  } catch (err) {
+    // console.log(err);
+    res.status(500).json({
+      type: "server failure",
+    });
+  }
+};
+
+module.exports.createTripApi = async (req, res, next) => {
+  try {
+    const id = req.body.driverId;
+    if (id) {
+      const start = req.body.start + "," + req.body.startState;
+      const end = req.body.end + "," + req.body.endState;
+      const veh = req.body.vehicle;
+      var numLower = req.body.vehicle.toLowerCase();
+      const num = numLower.replace(/\W/g, "");
+      const vehicle = await Vehicle.findOne({ vehicleNum: num });
+
+      const geoData = await geoCoder
+        .forwardGeocode({
+          query: start,
+          limit: 1,
+        })
+        .send();
+      const geoData2 = await geoCoder
+        .forwardGeocode({
+          query: end,
+          limit: 1,
+        })
+        .send();
+      const starting = geoData.body.features[0].geometry.coordinates;
+      const ending = geoData2.body.features[0].geometry.coordinates;
+
+      const distance = turf.default(starting, ending, { units: "kilometers" });
+
+      console.log(distance, "km");
+      if (vehicle) {
+        if (req.body.public === "on") {
+          let check = true;
+          const trip = new Trip({
+            isPublic: check,
+            Driver: id,
+            Vehicle: vehicle.vehicleNum,
+            Type: vehicle.Type,
+            coordinateStart: starting,
+            coordinateEnd: ending,
+            Start: start,
+            End: end,
+          });
+
+          if (vehicle.isVerified == "false") {
+            return res.status(201).json({
+              type: "user error",
+              message: "Vehicle not verified ",
+            });
+          }
+          await trip
+            .save()
+            .then(async (result) => {
+              console.log(result, "result");
+              await Vehicle.findOneAndUpdate(
+                { vehicleNum: num },
+                { $push: { Trip: result._id } }
+              );
+
+              await Driver.findByIdAndUpdate(id, {
+                $push: { Trip: result._id },
+              });
+
+              return res.status(200).json({
+                message: "success",
+                data: {
+                  start: starting,
+                  ending: ending,
+                  isTripPublic: check,
+                  location1: start,
+                  location2: end,
+                  vehicle_num: veh,
+                  type: vehicle.Type,
+                  TripId: result._id,
+                },
+              });
+            })
+            .catch((err) => {
+              console.log(err);
+              return res.status(500).json({
+                type: "server failure",
+              });
+            });
+        } else {
+          let check = false;
+          const trip = new Trip({
+            isPublic: check,
+            Driver: id,
+            Vehicle: vehicle.vehicleNum,
+            Type: vehicle.Type,
+            coordinateStart: starting,
+            coordinateEnd: ending,
+            Start: start,
+            End: end,
+          });
+
+          if (vehicle.isVerified == "false") {
+            return res.status(201).json({
+              type: "user error",
+              message: "Vehicle is not verified ",
+            });
+          }
+          await trip
+            .save()
+            .then(async (result) => {
+              await Vehicle.findOneAndUpdate(
+                { vehicleNum: num },
+                { $push: { Trip: result._id } }
+              );
+              await Driver.findByIdAndUpdate(id, {
+                $push: { Trip: result._id },
+              });
+
+              return res.status(200).json({
+                message: "success",
+                data: {
+                  start: starting,
+                  ending: ending,
+                  isTripPublic: check,
+                  location1: start,
+                  location2: end,
+                  vehicle_num: veh,
+                  type: vehicle.Type,
+                  TripId: result._id,
+                },
+              });
+            })
+            .catch((err) => {
+              console.log(err);
+              return res.status(500).json({
+                type: "server failure",
+              });
+            });
+        }
+      } else {
+        return res.status(201).json({
+          type: "user error",
+          message: "Vehicle is not registered ",
+        });
+      }
+    } else {
+      return res.status(201).json({
+        type: "user error",
+        message: "Invalid driver ID ",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      type: "server failure",
+    });
   }
 };

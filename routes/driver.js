@@ -31,4 +31,8 @@ router.route("/test").get((req, res) => {
   res.render("driver/map", { location1: "Kullu,HP", location2: "Mandi,HP" });
 });
 
+//api routes
+router.route("/login/api").post(drivers.loginVerifyApi);
+router.route("/createTrip/api").post(drivers.createTripApi);
+
 module.exports = router;
