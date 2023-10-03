@@ -7,6 +7,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const path = require("path");
 const mongoose = require("mongoose");
+const socketio = require("socket.io");
 
 //ROUTES
 const ownerRoutes = require("./routes/owner");
@@ -74,6 +75,12 @@ mongoose
   .then((result) => {
     console.log("Database Connected!!");
     const server = app.listen(port);
+
+    const io = socketio(server);
+
+    io.on("connection", (socket) => {
+      console.log("client connected ");
+    });
   })
   .catch((err) => {
     console.log(err);
