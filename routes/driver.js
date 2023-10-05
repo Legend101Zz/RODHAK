@@ -28,7 +28,7 @@ router.route("/end").get(drivers.end);
 
 //test routes
 router.route("/test").get((req, res) => {
-  res.render("driver/map", { location1: "Kullu,HP", location2: "Mandi,HP" });
+  res.status(200).send({ message: "success" });
 });
 
 //api routes
