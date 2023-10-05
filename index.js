@@ -75,7 +75,7 @@ mongoose
   .then((result) => {
     console.log("Database Connected!!");
     const server = app.listen(port);
-
+    console.log("Listening on port :", port);
     const io = socketio(server);
 
     io.on("connection", (socket) => {
