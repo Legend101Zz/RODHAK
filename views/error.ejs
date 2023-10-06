@@ -774,19 +774,5 @@
         <!-- END Content -->
       </section>
     </a>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-      const socket = io("https://rodhak11.onrender.com/");
-
-      socket.on("connect", () => {
-        console.log("Connected");
-        socket.emit("client cookoo");
-      });
-
-      //listen for the nsList event
-      socket.on("nsList", (nsData) => {
-        console.log(nsData);
-      });
-    </script>
   </body>
 </html>

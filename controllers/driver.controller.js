@@ -205,6 +205,7 @@ module.exports.trip = async (req, res, next) => {
     const start = req.body.start[0] + "," + req.body.start[1];
     const end = req.body.end[0] + "," + req.body.end[1];
     const veh = req.body.vehicle;
+    const start_time = req.body.start_time;
     var numLower = req.body.vehicle.toLowerCase();
     const num = numLower.replace(/\W/g, "");
     const vehicle = await Vehicle.findOne({ vehicleNum: num });
@@ -239,6 +240,7 @@ module.exports.trip = async (req, res, next) => {
           coordinateEnd: ending,
           Start: start,
           End: end,
+          start_time: start_time,
         });
         await trip
           .save()
@@ -266,6 +268,7 @@ module.exports.trip = async (req, res, next) => {
                 veh: veh,
                 type: vehicle.Type,
                 id: result._id,
+                start_time: start_time,
               });
             }
           })
@@ -283,6 +286,7 @@ module.exports.trip = async (req, res, next) => {
           coordinateEnd: ending,
           Start: start,
           End: end,
+          start_time: start_time,
         });
 
         await trip
@@ -310,6 +314,7 @@ module.exports.trip = async (req, res, next) => {
                 veh: veh,
                 type: vehicle.Type,
                 id: result._id,
+                start_time: start_time,
               });
             }
           })
@@ -426,31 +431,20 @@ module.exports.createTripApi = async (req, res, next) => {
   try {
     const id = req.body.driverId;
     if (id) {
-      const start = req.body.start + "," + req.body.startState;
-      const end = req.body.end + "," + req.body.endState;
+      const start = req.body.source;
+      const end = req.body.destination;
       const veh = req.body.vehicle;
       var numLower = req.body.vehicle.toLowerCase();
       const num = numLower.replace(/\W/g, "");
       const vehicle = await Vehicle.findOne({ vehicleNum: num });
 
-      const geoData = await geoCoder
-        .forwardGeocode({
-          query: start,
-          limit: 1,
-        })
-        .send();
-      const geoData2 = await geoCoder
-        .forwardGeocode({
-          query: end,
-          limit: 1,
-        })
-        .send();
-      const starting = geoData.body.features[0].geometry.coordinates;
-      const ending = geoData2.body.features[0].geometry.coordinates;
+      const starting = req.body.sourceLocation;
+      const ending = req.body.destinationLocation;
 
-      const distance = turf.default(starting, ending, { units: "kilometers" });
+      const start_time = req.body.start_time;
 
-      console.log(distance, "km");
+      console.log("req body check", req.body);
+
       if (vehicle) {
         if (req.body.public === "on") {
           let check = true;
@@ -463,6 +457,7 @@ module.exports.createTripApi = async (req, res, next) => {
             coordinateEnd: ending,
             Start: start,
             End: end,
+            start_time: start_time,
           });
 
           if (vehicle.isVerified == "false") {
@@ -495,6 +490,7 @@ module.exports.createTripApi = async (req, res, next) => {
                   vehicle_num: veh,
                   type: vehicle.Type,
                   TripId: result._id,
+                  start_time: start_time,
                 },
               });
             })
@@ -515,6 +511,7 @@ module.exports.createTripApi = async (req, res, next) => {
             coordinateEnd: ending,
             Start: start,
             End: end,
+            start_time: start_time,
           });
 
           if (vehicle.isVerified == "false") {
@@ -545,6 +542,7 @@ module.exports.createTripApi = async (req, res, next) => {
                   vehicle_num: veh,
                   type: vehicle.Type,
                   TripId: result._id,
+                  start_time: start_time,
                 },
               });
             })

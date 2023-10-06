@@ -65,7 +65,7 @@ module.exports.trips = async (req, res, next) => {
       Driver: 0,
       coordinateStart: 0,
       coordinateEnd: 0,
-      Speed: 0,
+
       isFinished: 0,
       isPublic: 0,
     }

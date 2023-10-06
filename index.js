@@ -80,10 +80,6 @@ mongoose
 
     io.on("connection", (socket) => {
       console.log("client connected ");
-      socket.on("position-change", (data) => {
-        console.log("got coords for hardy", data);
-        io.emit("sendCoords", { text: data });
-      });
     });
   })
   .catch((err) => {

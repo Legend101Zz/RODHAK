@@ -1,3 +1,4 @@
+const { date } = require("joi");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -16,12 +17,7 @@ const TripSchema = new Schema({
   },
   Start: { type: String },
   End: { type: String },
-  Speed: { type: Number, default: 0 },
-
-  currentCoordinates: {
-    type: [Number],
-  },
-
+  start_time: { type: String },
   coordinateStart: {
     type: [Number],
   },
