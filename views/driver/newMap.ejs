@@ -73,8 +73,25 @@
         End trip
       </button>
     </a>
+    <script src="/socket.io/socket.io.js"></script>
+
     <script>
+      const socket = io("http://localhost:3000/");
+
+      socket.on("connect", () => {
+        console.log("Connected");
+      });
+
+      // Define the postJSON function to send data to the server
+      function postJSON(data) {
+        console.log("inside__postJson", data);
+        socket.emit("driverData", data); // Emit the driverData event with the data
+      }
+
       tripId = "<%-trip._id%>";
+      startTrip = "<%-trip.Start%>";
+      endTrip = "<%-trip.End%>";
+
       navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
         enableHighAccuracy: true,
       });
@@ -83,34 +100,13 @@
         enableHighAccuracy: true,
       });
 
-      //api-post for sending driver's coord
-      function postJSON(data) {
-        console.log("inside__postJson");
-
-        fetch("https://rodhak-111.onrender.com/himraahi/coordinate", {
-          method: "POST", // or 'PUT'
-          mode: "cors",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        })
-          .then((result) => {
-            const result2 = result.json();
-            console.log("Success:", result2);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      }
-
       async function successApi(position) {
         const long = position.coords.longitude;
         const lat = position.coords.latitude;
         const speed = position.coords.speed;
-        const data = { long, lat, speed, tripId };
+
+        const data = { long, lat, speed, tripId, startTrip, endTrip };
         console.log("successAPI__>", position);
-        // setupMap([position.coords.longitude, position.coords.latitude]);
         start(data);
       }
 
@@ -122,15 +118,17 @@
         const long = position.coords.longitude;
         const lat = position.coords.latitude;
         const speed = position.coords.speed;
-        const data = { long, lat, speed, tripId };
+
+        const data = { long, lat, speed, tripId, startTrip, endTrip };
         console.log(position, data, tripId, "here location");
         start(data);
       }
 
       function errorLocation() {}
+
       function start(data) {
         console.log("function__started");
-        postJSON({ data: data });
+        postJSON(data); // Call the postJSON function to send data to the server
       }
     </script>
   </body>

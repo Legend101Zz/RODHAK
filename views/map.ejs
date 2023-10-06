@@ -42,142 +42,85 @@
         font-family: "Open Sans", sans-serif;
       }
     </style>
-
-    <script type="module" src="/script.js"></script>
   </head>
   <body>
     <div id="map"></div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
       var mapId = "<%=env%>";
-      const socket = io("https://rodhak11.onrender.com/");
+      mapboxgl.accessToken = mapId;
+      const socket = io("http://localhost:3000/");
 
       socket.on("connect", () => {
         console.log("Connected");
-        socket.emit("client cookoo");
       });
 
       const queryString = window.location.pathname.split("p");
       console.log(queryString[1], "here");
 
-      socket.on(`position-change${queryString}`, (data) => {
-        console.log("got coords for hardy", data);
-        io.emit("sendCoords", { text: data });
+      // Initialize the map with a placeholder location
+      const map = new mapboxgl.Map({
+        container: "map",
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: [0, 0], // Placeholder center
+        zoom: 15,
       });
 
-      // try {
-      //   fetch(url, { method: "GET" })
-      //     .then(async (response) => {
-      //       const data1 = await response.json();
-      //       console.log(response, data1);
-      //       const centerForTest = [data1.longitude, data1.latitude];
-
-      //       setupMap(
-      //         data1.data.currentCoordinates,
-      //         data1.data.Start,
-      //         data1.data.End
-      //       );
-      //       // setupMap(centerForTest);
-      //       // setupMap(center);
-      //     })
-      //     .catch((err) => {
-      //       console.log(err);
-      //     });
-      // } catch (error) {
-      //   console.log("There was an error", error);
-      // }
-
-      function setupMap(center) {
-        console.log(center);
-        const map = new mapboxgl.Map({
-          container: "map",
-          style: "mapbox://styles/mapbox/streets-v12",
-          center: center,
-          zoom: 15,
+      map.on("load", () => {
+        // Initialize the source for the bus marker
+        map.addSource("busNew", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: [],
+          },
         });
 
-        map.on("load", async () => {
-          // Get the initial location of the Bus;
-          const geojson = await getLocation();
-          // Add the Bus location as a source.
+        // Add the bus marker layer
+        map.addLayer({
+          id: "buses",
+          type: "symbol",
+          source: "busNew",
+          layout: {
+            "icon-image": "bus",
+            "icon-size": 2.25,
+          },
+        });
 
-          map.loadImage("/car.png", (error, image) => {
-            if (error) throw error;
-
-            // Add the image to the map style.
-            map.addImage("busNew", image);
-            console.log(image);
-            // Add a layer to use the image to represent the data.
-            map.addSource("busNew", {
-              type: "geojson",
-              data: geojson,
-            });
-
-            // Add the rocket symbol layer to the map.
-            map.addLayer({
-              id: "buses",
-              type: "symbol",
-              source: "busNew",
-              layout: {
-                "icon-image": "bus",
-                "icon-size": 2.25,
+        // Function to update the bus marker on the map
+        function updateBusMarker(coordinates) {
+          map.getSource("busNew").setData({
+            type: "FeatureCollection",
+            features: [
+              {
+                type: "Feature",
+                geometry: {
+                  type: "Point",
+                  coordinates: coordinates,
+                },
+                properties: {
+                  title: "Rodhak",
+                  description: "Driver's Current Location",
+                },
               },
-            });
+            ],
           });
 
-          // Update the source from the API every 2 seconds.
-          const updateSource = setInterval(async () => {
-            const geojson = await getLocation(updateSource);
-            map.getSource("busNew").setData(geojson);
-            console.log(map, map.getSource("busNew"));
-          }, 2000);
+          // Fly the map to the updated location
+          map.flyTo({
+            center: coordinates,
+            speed: 0.5,
+          });
+        }
 
-          async function getLocation(updateSource) {
-            // Make a GET request to the API and return the location of the Bus.
-            try {
-              const response = await fetch(url, { method: "GET" });
-              const data = await response.json();
-              console.log(data);
-              // Fly the map to the location of bus.
-              map.flyTo({
-                center: [
-                  data.data.currentCoordinates[0],
-                  data.data.currentCoordinates[1],
-                  // data.longitude,
-                  // data.latitude,
-                ],
-                speed: 0.5,
-              });
-              // Return the location of the Bus as GeoJSON.
-              return {
-                type: "FeatureCollection",
-                features: [
-                  {
-                    type: "Feature",
-                    geometry: {
-                      type: "Point",
-                      coordinates: [
-                        data.data.currentCoordinates[0],
-                        data.data.currentCoordinates[1],
-                        // data.longitude,
-                        // data.latitude,
-                      ],
-                    },
-                    properties: {
-                      title: "Rodhak",
-                      description: "Driver's Current Location",
-                    },
-                  },
-                ],
-              };
-            } catch (err) {
-              // If the updateSource interval is defined, clear the interval to stop updating the source.
-              if (updateSource) clearInterval(updateSource);
-              throw new Error(err);
-            }
+        // Listen for WebSocket updates from the server
+        socket.on("broadcastDriverData", (data) => {
+          if (data.tripId === queryString) {
+            console.log("Got coords for Hardy", data);
+            updateBusMarker([data.long, data.lat]);
           }
         });
-      }
+      });
     </script>
   </body>
 </html>

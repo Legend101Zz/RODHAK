@@ -6,8 +6,9 @@ const Trip = require("../models/trip.schema");
 const bcrypt = require("bcrypt");
 var mongoose = require("mongoose");
 
+// -----------NOT IN USE NOW AS WE USE WEBSOCKETS TO HANDLE THIS--------------
+//===============LEGACY CODE===============
 // api for updating current coordinates
-
 module.exports.api = async (req, res, next) => {
   console.log(req.session.tripId);
   const id = req.body.data.tripId;

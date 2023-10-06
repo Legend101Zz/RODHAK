@@ -80,6 +80,11 @@ mongoose
 
     io.on("connection", (socket) => {
       console.log("client connected ");
+      socket.on("driverData", (data) => {
+        // Broadcast data to all connected users (excluding the sender)
+        console.log("Driver_DATA", data);
+        socket.broadcast.emit("broadcastDriverData", data);
+      });
     });
   })
   .catch((err) => {
