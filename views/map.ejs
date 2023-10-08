@@ -76,20 +76,9 @@
           },
         });
 
-        // Add the bus marker layer
-        map.addLayer({
-          id: "buses",
-          type: "symbol",
-          source: "busNew",
-          layout: {
-            "icon-image": "bus",
-            "icon-size": 2.25,
-          },
-        });
-
         // Function to update the bus marker on the map
-        function updateBusMarker(coordinates) {
-          map.getSource("busNew").setData({
+        function updateBusMarker(coordinates, source, dest, time) {
+          let tryMap = map.getSource("busNew").setData({
             type: "FeatureCollection",
             features: [
               {
@@ -101,10 +90,36 @@
                 properties: {
                   title: "Rodhak",
                   description: "Driver's Current Location",
+
+                  start: source,
+                  end: dest,
+
+                  time: time,
                 },
               },
             ],
           });
+
+          let bus = map.getSource("busNew")._data;
+          console.log("check__22", bus);
+
+          for (const feature of bus.features) {
+            // create a HTML element for each feature
+            const el = document.createElement("div");
+
+            el.className = "marker";
+
+            // make a marker for each feature and add to the map
+            new mapboxgl.Marker(el)
+              .setLngLat(feature.geometry.coordinates)
+              .setPopup(
+                new mapboxgl.Popup({ offset: 25 }) // add popups
+                  .setHTML(
+                    `<h3>${feature.properties.time}</h3><br/><p>From: ${feature.properties.start}</p><p>To: ${feature.properties.end}</p>  `
+                  )
+              )
+              .addTo(map);
+          }
 
           // Fly the map to the updated location
           map.flyTo({
@@ -115,9 +130,16 @@
 
         // Listen for WebSocket updates from the server
         socket.on("broadcastDriverData", (data) => {
-          if (data.tripId === queryString) {
+          console.log("checking", data, queryString[1], data.tripId);
+          const stringWithoutSlash = queryString[1].replace("/", "");
+          if (data.tripId === stringWithoutSlash) {
             console.log("Got coords for Hardy", data);
-            updateBusMarker([data.long, data.lat]);
+            updateBusMarker(
+              [data.long, data.lat],
+              data.startTrip,
+              data.endTrip,
+              data.currentTime
+            );
           }
         });
       });

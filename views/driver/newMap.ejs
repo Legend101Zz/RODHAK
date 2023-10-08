@@ -100,13 +100,30 @@
         enableHighAccuracy: true,
       });
 
+      function getCurrentTime() {
+        const currentDate = new Date();
+        const hours = currentDate.getHours().toString().padStart(2, "0");
+        const minutes = currentDate.getMinutes().toString().padStart(2, "0");
+        const seconds = currentDate.getSeconds().toString().padStart(2, "0");
+
+        return `${hours}:${minutes}:${seconds}`;
+      }
+
       async function successApi(position) {
         const long = position.coords.longitude;
         const lat = position.coords.latitude;
         const speed = position.coords.speed;
-
-        const data = { long, lat, speed, tripId, startTrip, endTrip };
-        console.log("successAPI__>", position);
+        const currentTime = getCurrentTime();
+        const data = {
+          long,
+          lat,
+          speed,
+          tripId,
+          startTrip,
+          endTrip,
+          currentTime,
+        };
+        console.log("successAPI__>", data);
         start(data);
       }
 
@@ -118,9 +135,17 @@
         const long = position.coords.longitude;
         const lat = position.coords.latitude;
         const speed = position.coords.speed;
-
-        const data = { long, lat, speed, tripId, startTrip, endTrip };
-        console.log(position, data, tripId, "here location");
+        const currentTime = getCurrentTime();
+        const data = {
+          long,
+          lat,
+          speed,
+          tripId,
+          startTrip,
+          endTrip,
+          currentTime,
+        };
+        console.log(data, "here location");
         start(data);
       }
 

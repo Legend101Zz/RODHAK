@@ -10,34 +10,28 @@ var mongoose = require("mongoose");
 //===============LEGACY CODE===============
 // api for updating current coordinates
 module.exports.api = async (req, res, next) => {
-  console.log(req.session.tripId);
+  // console.log(req.session.tripId);
   const id = req.body.data.tripId;
   const longitude = req.body.data.long;
   const latitude = req.body.data.lat;
   const speed = req.body.data.speed;
   const coordinates = [longitude, latitude];
-  console.log("coords__API__STARTED=--->", id, coordinates);
+  // console.log("coords__API__STARTED=--->", id, coordinates);
   await Trip.findOneAndUpdate(
     { _id: id },
     { currentCoordinates: coordinates, Speed: speed }
-  )
-    .then((result) => {
-      console.log(result);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  );
 };
 //owner login
 
 module.exports.owner = async (req, res, next) => {
   try {
-    console.log(req.body);
+    // console.log(req.body);
     const owner = await Owner.findOne(
       { email: req.body.email },
       { Driver: 0, Vehicle: 0 }
     );
-    console.log(owner);
+    // console.log(owner);
     if (!owner)
       return res.status(401).send({ message: "Invalid Email or Password" });
     const validPassword = await bcrypt.compare(
@@ -71,7 +65,7 @@ module.exports.trips = async (req, res, next) => {
       isPublic: 0,
     }
   );
-  console.log(trips, "hello1");
+  // console.log(trips, "hello1");
   res.status(200).send({ message: "Success", data: trips });
 };
 
@@ -81,7 +75,7 @@ module.exports.trips = async (req, res, next) => {
 module.exports.trip = async (req, res, next) => {
   const trip = await Trip.findById(req.params.tripId);
   const vehicle = await Vehicle.find({ Trip: trip._id });
-  console.log("Vehicle--->", vehicle[0].vehicleNum);
+  // console.log("Vehicle--->", vehicle[0].vehicleNum);
   if (trip) {
     res.status(200).send({
       message: "Success",
@@ -107,7 +101,7 @@ module.exports.singleTrip = async (req, res, next) => {
     // const id = toString(check);
     // console.log(check, id);
     const trip = await Trip.findById(check);
-    console.log("TRIP__HERE", trip.isFinished);
+    // console.log("TRIP__HERE", trip.isFinished);
     if (trip) {
       if (!trip.isFinished) {
         res.render("map", { env: process.env.MAP_BOX });
@@ -125,11 +119,11 @@ module.exports.singleTrip = async (req, res, next) => {
 //send individual owner data no vehicles and rest
 
 module.exports.ownerData = async (req, res, next) => {
-  console.log("checl");
+  // console.log("checl");
 
   const id = req.params.id;
   const owner = await Owner.findById(id);
-  console.log(owner);
+  // console.log(owner);
   if (owner) {
     res.status(200).send({ message: "success", data: owner });
   } else {

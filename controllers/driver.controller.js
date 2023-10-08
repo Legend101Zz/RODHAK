@@ -28,7 +28,7 @@ transporter.verify((error, success) => {
   if (error) {
     console.log(error);
   } else {
-    console.log("Lets go babbyy");
+    //console.log("Lets go babbyy");
   }
 });
 
@@ -43,10 +43,10 @@ module.exports.DriverRegister = async (req, res, next) => {
   const obj = Object.assign({}, req.files);
 
   const { email, username, phone, owner, age } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   const user = await Driver.findOne({ email: req.body.email });
   const own = await Owner.findOne({ email: req.body.owner });
-  console.log(own, "owner");
+  // console.log(own, "owner");
   if (user && !own) {
     return res.status(409).send({
       message:
@@ -131,11 +131,11 @@ module.exports.loginVerify = async (req, res, next) => {
   const email = req.body.mail;
   try {
     const driver = await Driver.findOne({ email: email });
-    console.log(req.body, driver.password);
+    // console.log(req.body, driver.password);
     if (driver) {
-      console.log(driver);
+      // console.log(driver);
       const validPassword = await bcrypt.compare(password, driver.password);
-      console.log(validPassword);
+      // console.log(validPassword);
       if (validPassword) {
         // console.log("hit");
 
@@ -167,10 +167,10 @@ module.exports.loginVerify = async (req, res, next) => {
 module.exports.main = async (req, res, next) => {
   const id = req.session.driverId;
   if (id) {
-    console.log(id);
+    // console.log(id);
     await Driver.findById(id)
       .then((result) => {
-        console.log(result);
+        // console.log(result);
         if (result.isVerified == "false") {
           res.render("driver/wait");
         } else {
@@ -190,7 +190,7 @@ module.exports.main = async (req, res, next) => {
 module.exports.start = async (req, res, next) => {
   const id = req.session.driverId;
   if (id) {
-    console.log(id);
+    // console.log(id);
 
     res.render("driver/start");
   } else {
@@ -225,9 +225,9 @@ module.exports.trip = async (req, res, next) => {
     const starting = geoData.body.features[0].geometry.coordinates;
     const ending = geoData2.body.features[0].geometry.coordinates;
 
-    const distance = turf.default(starting, ending, { units: "kilometers" });
+    // const distance = turf.default(starting, ending, { units: "kilometers" });
 
-    console.log(distance, "km");
+    // // console.log(distance, "km");
     if (vehicle) {
       if (req.body.public === "on") {
         let check = true;
@@ -245,7 +245,7 @@ module.exports.trip = async (req, res, next) => {
         await trip
           .save()
           .then(async (result) => {
-            console.log(result);
+            // console.log(result);
             if (vehicle.isVerified == "false") {
               res.render("users/vehicle");
             } else {
@@ -336,7 +336,7 @@ module.exports.map = async (req, res, next) => {
   const id = req.session.tripId;
   const type = req.body.type;
   const trip = await Trip.findById(id);
-  console.log(trip);
+  // console.log(trip);
 
   if (id) {
     res.render("driver/newMap", { trip: trip, type: type });
@@ -351,10 +351,10 @@ module.exports.end = async (req, res, next) => {
   const id = req.session.tripId;
 
   if (id) {
-    console.log(id);
+    // console.log(id);
     await Trip.findByIdAndUpdate(id, { isFinished: true })
       .then((result) => {
-        console.log(result);
+        // console.log(result);
         res.redirect("/api/v1/driver/main");
       })
       .catch((err) => {
@@ -443,7 +443,7 @@ module.exports.createTripApi = async (req, res, next) => {
 
       const start_time = req.body.start_time;
 
-      console.log("req body check", req.body);
+      // console.log("req body check", req.body);
 
       if (vehicle) {
         if (req.body.public === "on") {
@@ -469,7 +469,7 @@ module.exports.createTripApi = async (req, res, next) => {
           await trip
             .save()
             .then(async (result) => {
-              console.log(result, "result");
+              // console.log(result, "result");
               await Vehicle.findOneAndUpdate(
                 { vehicleNum: num },
                 { $push: { Trip: result._id } }
