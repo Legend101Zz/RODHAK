@@ -49,7 +49,7 @@
     <script>
       var mapId = "<%=env%>";
       mapboxgl.accessToken = mapId;
-      const socket = io("http://localhost:3000/");
+      const socket = io("https://rodhak11.onrender.com");
 
       socket.on("connect", () => {
         console.log("Connected");
