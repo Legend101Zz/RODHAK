@@ -2,7 +2,7 @@ mapboxgl.accessToken = mapId;
 
 const queryString = window.location.pathname.split("p");
 console.log(queryString[1], "here");
-const url = `https://rodhak11.onrender.com/himraahi/map${queryString[1]}`;
+const url = `http://195.35.45.35:3000/himraahi/map${queryString[1]}`;
 // const url = "https://api.wheretheiss.at/v1/satellites/25544";
 console.log(url);
 
