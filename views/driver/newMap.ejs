@@ -89,8 +89,8 @@
       }
 
       tripId = "<%-trip._id%>";
-      startTrip = "<%-trip.Start%>";
-      endTrip = "<%-trip.End%>";
+      sourceLocation = "<%-trip.Start%>";
+      destinationLocation = "<%-trip.End%>";
 
       navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
         enableHighAccuracy: true,
@@ -110,17 +110,17 @@
       }
 
       async function successApi(position) {
-        const long = position.coords.longitude;
-        const lat = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        const latitide = position.coords.latitude;
         const speed = position.coords.speed;
         const currentTime = getCurrentTime();
         const data = {
           long,
-          lat,
+          latitide,
           speed,
           tripId,
-          startTrip,
-          endTrip,
+          sourceLocation,
+          destinationLocation,
           currentTime,
         };
         console.log("successAPI__>", data);
@@ -132,17 +132,17 @@
       }
 
       async function successLocation(position) {
-        const long = position.coords.longitude;
-        const lat = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        const latitide = position.coords.latitude;
         const speed = position.coords.speed;
         const currentTime = getCurrentTime();
         const data = {
-          long,
-          lat,
+          longitude,
+          latitide,
           speed,
           tripId,
-          startTrip,
-          endTrip,
+          sourceLocation,
+          destinationLocation,
           currentTime,
         };
         console.log(data, "here location");

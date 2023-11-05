@@ -77,7 +77,7 @@
         });
 
         // Function to update the bus marker on the map
-        function updateBusMarker(coordinates, source, dest, time) {
+        function updateBusMarker(coordinates, source, dest, time, via) {
           let tryMap = map.getSource("busNew").setData({
             type: "FeatureCollection",
             features: [
@@ -95,6 +95,7 @@
                   end: dest,
 
                   time: time,
+                  via: via,
                 },
               },
             ],
@@ -115,7 +116,7 @@
               .setPopup(
                 new mapboxgl.Popup({ offset: 25 }) // add popups
                   .setHTML(
-                    `<h3>${feature.properties.time}</h3><br/><p>From: ${feature.properties.start}</p><p>To: ${feature.properties.end}</p>  `
+                    `<h3>${feature.properties.time}</h3><br/><p>From: ${feature.properties.start}</p><p>To: ${feature.properties.end}</p> <p>via: ${feature.properties.via}</p> `
                   )
               )
               .addTo(map);
@@ -132,13 +133,18 @@
         socket.on("broadcastDriverData", (data) => {
           console.log("checking", data, queryString[1], data.tripId);
           const stringWithoutSlash = queryString[1].replace("/", "");
-          if (data.tripId === stringWithoutSlash) {
+          if (data.tripID === stringWithoutSlash) {
             console.log("Got coords for Hardy", data);
+            let via;
+            if (data.viaLocation) {
+              via = data.viaLocation;
+            }
             updateBusMarker(
-              [data.long, data.lat],
-              data.startTrip,
-              data.endTrip,
-              data.currentTime
+              [data.longitude, data.latitude],
+              data.sourceLocation,
+              data.destinationLocation,
+              data.currentTime,
+              via
             );
           }
         });
