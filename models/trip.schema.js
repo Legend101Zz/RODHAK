@@ -24,6 +24,9 @@ const TripSchema = new Schema({
   coordinateEnd: {
     type: [Number],
   },
+  viaRoute: {
+    type: String,
+  },
 });
 
 TripSchema.plugin(require("mongoose-autopopulate"));
