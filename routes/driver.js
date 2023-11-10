@@ -33,6 +33,7 @@ router.route("/test").get((req, res) => {
 
 //api routes
 router.route("/login/api").post(drivers.loginVerifyApi);
+router.route("/endTrip/api").post(drivers.endTripApi);
 router.route("/createTrip/api").post(drivers.createTripApi);
 
 module.exports = router;

@@ -52,7 +52,7 @@
       mapboxgl.accessToken = mapId;
 
       // Create a socket connection
-      const socket = io("http://195.35.45.35:3000/");
+      const socket = io("http://localhost:3000/");
 
       // Event handler for socket connection
       socket.on("connect", () => {
@@ -71,60 +71,62 @@
         zoom: 15,
       });
 
-      // Initialize the source for the bus path
-      map.addSource("busPath", {
-        type: "geojson",
-        data: {
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: [], // Initially empty
+      // Listen for the map 'load' event
+      map.on("load", function () {
+        // Initialize the source for the bus path
+        map.addSource("busPath", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "LineString",
+              coordinates: [], // Initially empty
+            },
           },
-        },
-      });
+        });
 
-      // Add a layer to display the bus path
-      map.addLayer({
-        id: "busPathLayer",
-        type: "line",
-        source: "busPath",
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
-        },
-        paint: {
-          "line-color": "#007BFF", // Line color
-          "line-width": 2, // Line width
-        },
-      });
+        // Add a layer to display the bus path
+        map.addLayer({
+          id: "busPathLayer",
+          type: "line",
+          source: "busPath",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-color": "#007BFF", // Line color
+            "line-width": 2, // Line width
+          },
+        });
 
-      // Create a marker element
-      const el = document.createElement("div");
-      el.className = "marker";
+        // Create a marker element
+        const el = document.createElement("div");
+        el.className = "marker";
 
-      // Add the marker to the map
-      const busMarker = new mapboxgl.Marker(el)
-        .setLngLat([0, 0])
-        .setPopup(
-          new mapboxgl.Popup({ offset: 25 }).setHTML(
-            "<h3>Bus Details</h3>" +
-              "<p>Driver's Current Location</p>" +
-              `<p>From: ${source}</p>` +
-              `<p>To: ${dest}</p>` +
-              `<p>Via: ${via}</p>` +
-              `<p>Time: ${time}</p>`
+        // Add the marker to the map
+        const busMarker = new mapboxgl.Marker(el)
+          .setLngLat([0, 0])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 25 }).setHTML(
+              "<h3>Bus Details</h3>" +
+                "<p>Driver's Current Location</p>" +
+                `<p>From: </p>` +
+                `<p>To:</p>` +
+                `<p>Via: </p>` +
+                `<p>Time: </p>`
+            )
           )
-        )
-        .addTo(map);
+          .addTo(map);
 
-      // Listen for WebSocket updates from the server
-      socket.on("broadcastDriverData", (data) => {
-        console.log("Received data:", data);
+        // Listen for WebSocket updates from the server
+        socket.on("broadcastDriverData", (data) => {
+          console.log("Received data:", data);
 
-        // Check if the data is for the specific trip
-        const stringWithoutSlash = queryString[1].replace("/", "");
-        if (data.tripID === stringWithoutSlash) {
+          // Check if the data is for the specific trip
+          const stringWithoutSlash = queryString[1].replace("/", "");
+          // if (data.tripID === stringWithoutSlash) {
           console.log("Got coords for Hardy", data);
           let via;
           if (data.viaLocation) {
@@ -164,7 +166,8 @@
             center: [data.longitude, data.latitude],
             speed: 0.5,
           });
-        }
+          // }
+        });
       });
     </script>
   </body>

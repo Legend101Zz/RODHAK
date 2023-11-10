@@ -44,5 +44,9 @@
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.6.1",
     "turf-distance": "^3.0.12"
+  },
+  "devDependencies": {
+    "@types/faker": "^6.6.9",
+    "faker": "^5.5.3"
   }
 }

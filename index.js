@@ -1,7 +1,7 @@
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
-
+const faker = require("faker");
 const express = require("express");
 const app = express();
 const port = process.env.PORT || 3000;
@@ -80,11 +80,27 @@ mongoose
 
     io.on("connection", (socket) => {
       console.log("client connected ");
-      socket.on("driverData", (data) => {
-        // Broadcast data to all connected users (excluding the sender)
-        console.log("Driver_DATA", data);
+      // socket.on("driverData", (data) => {
+      // Broadcast data to all connected users (excluding the sender)
+      // console.log("Driver_DATA", data);
+
+      setInterval(() => {
+        const latitude = parseFloat(faker.address.latitude());
+        const longitude = parseFloat(faker.address.longitude());
+
+        const data = {
+          tripID: "your_trip_id",
+          latitude: latitude,
+          longitude: longitude,
+          sourceLocation: "Source",
+          destinationLocation: "Destination",
+          viaLocation: "Via",
+          currentTime: new Date().toLocaleTimeString(),
+        };
+        console.log("data", data);
         socket.broadcast.emit("broadcastDriverData", data);
-      });
+      }, 2000);
+      // });
     });
   })
   .catch((err) => {

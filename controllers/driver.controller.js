@@ -367,6 +367,34 @@ module.exports.end = async (req, res, next) => {
 
 // --------------DRIVER APIS-----------------
 
+module.exports.endTripApi = async (req, res, next) => {
+  const id = req.body.tripId;
+
+  if (id) {
+    // console.log(id);
+    await Trip.findByIdAndUpdate(id, { isFinished: true })
+      .then((result) => {
+        // console.log(result);
+        return res.status(200).json({
+          type: "success",
+          message: "trip ended",
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.status(501).json({
+          type: "error",
+          message: "internal server error",
+        });
+      });
+  } else {
+    return res.status(200).json({
+      type: "error",
+      message: "invalid trip id",
+    });
+  }
+};
+
 module.exports.loginVerifyApi = async (req, res, next) => {
   const plainPassword = req.body.password; // Password from the request
   const email = req.body.mail;
