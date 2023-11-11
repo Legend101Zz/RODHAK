@@ -129,8 +129,8 @@
           // if (data.tripID === stringWithoutSlash) {
           console.log("Got coords for Hardy", data);
           let via;
-          if (data[viaLocation]) {
-            via = data[viaLocation];
+          if (data.viaLocation) {
+            via = data.viaLocation;
           }
 
           // Update the marker's location
@@ -162,15 +162,15 @@
             .setHTML(
               "<h3>Bus Details</h3>" +
                 "<p>Driver's Current Location</p>" +
-                `<p>From: ${data[sourceLocation]}</p>` +
-                `<p>To: ${data[destinationLocation]}</p>` +
+                `<p>From: ${data.sourceLocation}</p>` +
+                `<p>To: ${data.destinationLocation}</p>` +
                 `<p>Via: ${via}</p>` +
-                `<p>Time: ${data[currentTime]}</p>`
+                `<p>Time: ${data.currentTime}</p>`
             );
 
           // Fly to the updated location with a smooth transition
           map.flyTo({
-            center: [data[latitude], data[latitude]],
+            center: [data.latitude, data.latitude],
             speed: 0.5,
           });
           // }

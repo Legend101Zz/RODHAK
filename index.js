@@ -89,7 +89,7 @@ mongoose
           // data[latitude],
           JSON.parse(data)
         );
-        socket.broadcast.emit("broadcastDriverData", data);
+        socket.broadcast.emit("broadcastDriverData", JSON.parse(data));
         // setInterval(() => {
         //   const latitude = parseFloat(faker.address.latitude());
         //   const longitude = parseFloat(faker.address.longitude());
