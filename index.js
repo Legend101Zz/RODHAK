@@ -85,8 +85,8 @@ mongoose
         console.log(
           "Driver_DATA",
           data,
-          data[longitude],
-          data[latitude],
+          data["longitude"],
+          // data[latitude],
           JSON.parse(data)
         );
         socket.broadcast.emit("broadcastDriverData", data);
