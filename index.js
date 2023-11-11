@@ -82,7 +82,7 @@ mongoose
       console.log("client connected ");
       socket.on("driverData", (data) => {
         // Broadcast data to all connected users (excluding the sender)
-        console.log("Driver_DATA", data);
+        console.log("Driver_DATA", data, data.longitude, data.latitude);
         socket.broadcast.emit("broadcastDriverData", data);
         // setInterval(() => {
         //   const latitude = parseFloat(faker.address.latitude());
