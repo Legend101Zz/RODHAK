@@ -78,6 +78,24 @@
         zoom: 15,
       });
 
+      // Create a marker element
+      var el = document.createElement("div");
+      el.className = "marker";
+      // Add the marker to the map
+      var busMarker = new mapboxgl.Marker(el)
+        .setLngLat([0, 0])
+        .setPopup(
+          new mapboxgl.Popup({ offset: 25 }).setHTML(
+            "<h3>Bus Details</h3>" +
+              "<p>Driver's Current Location</p>" +
+              `<p>From: </p>` +
+              `<p>To:</p>` +
+              `<p>Via: </p>` +
+              `<p>Time: </p>`
+          )
+        )
+        .addTo(map);
+
       // Listen for the map 'load' event
       map.on("load", async function () {
         // Initialize the source for the bus path
@@ -142,23 +160,6 @@
       // Listen for WebSocket updates from the server
       socket.on("broadcastDriverData", async (data) => {
         console.log("Received data:", data);
-        // Create a marker element
-        var el = document.createElement("div");
-        el.className = "marker";
-        // Add the marker to the map
-        const busMarker = new mapboxgl.Marker(el)
-          .setLngLat([0, 0])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 }).setHTML(
-              "<h3>Bus Details</h3>" +
-                "<p>Driver's Current Location</p>" +
-                `<p>From: </p>` +
-                `<p>To:</p>` +
-                `<p>Via: </p>` +
-                `<p>Time: </p>`
-            )
-          )
-          .addTo(map);
 
         // Check if the data is for the specific trip
         const stringWithoutSlash = queryString[1].replace("/", "");
