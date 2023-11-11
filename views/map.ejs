@@ -134,7 +134,14 @@
           }
 
           // Update the marker's location
-          busMarker.setLngLat([data.longitude, data.latitude]);
+          if (!isNaN(data.longitude) && !isNaN(data.latitude)) {
+            busMarker.setLngLat([data.longitude, data.latitude]);
+          } else {
+            console.error(
+              "Invalid latitude or longitude in the received data:",
+              data
+            );
+          }
 
           // Update the bus path with the new coordinates
           const busPath = map.getSource("busPath");
@@ -163,7 +170,7 @@
 
           // Fly to the updated location with a smooth transition
           map.flyTo({
-            center: [data.longitude, data.latitude],
+            center: [data.latitude, data.latitude],
             speed: 0.5,
           });
           // }
