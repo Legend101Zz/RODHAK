@@ -78,6 +78,9 @@
         zoom: 15,
       });
 
+      // Declare busMarker outside the map.on block
+      var busMarker;
+
       // Listen for the map 'load' event
       map.on("load", async function () {
         // Initialize the source for the bus path
@@ -143,7 +146,7 @@
         el.className = "marker";
 
         // Add the marker to the map
-        var busMarker = new mapboxgl.Marker(el)
+        busMarker = new mapboxgl.Marker(el)
           .setLngLat([0, 0])
           .setPopup(
             new mapboxgl.Popup({ offset: 25 }).setHTML(
