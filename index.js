@@ -87,7 +87,7 @@ mongoose
           data,
           data.longitude,
           data.latitude,
-          await json(data)
+          JSON.stringify(data)
         );
         socket.broadcast.emit("broadcastDriverData", data);
         // setInterval(() => {
