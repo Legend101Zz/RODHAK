@@ -71,7 +71,7 @@
       console.log(queryString[1], "here");
 
       // Initialize the map with a placeholder location
-      const map = new mapboxgl.Map({
+      var map = new mapboxgl.Map({
         container: "map",
         style: "mapbox://styles/mapbox/streets-v12",
         center: [0, 0], // Placeholder center
@@ -139,11 +139,11 @@
         // });
 
         // Create a marker element
-        const el = document.createElement("div");
+        var el = document.createElement("div");
         el.className = "marker";
 
         // Add the marker to the map
-        const busMarker = new mapboxgl.Marker(el)
+        var busMarker = new mapboxgl.Marker(el)
           .setLngLat([0, 0])
           .setPopup(
             new mapboxgl.Popup({ offset: 25 }).setHTML(
