@@ -80,9 +80,15 @@ mongoose
 
     io.on("connection", (socket) => {
       console.log("client connected ");
-      socket.on("driverData", (data) => {
+      socket.on("driverData", async (data) => {
         // Broadcast data to all connected users (excluding the sender)
-        console.log("Driver_DATA", data, data.longitude, data.latitude);
+        console.log(
+          "Driver_DATA",
+          data,
+          data.longitude,
+          data.latitude,
+          await json(data)
+        );
         socket.broadcast.emit("broadcastDriverData", data);
         // setInterval(() => {
         //   const latitude = parseFloat(faker.address.latitude());
