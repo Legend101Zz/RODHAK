@@ -78,9 +78,6 @@
         zoom: 15,
       });
 
-      // Declare busMarker outside the map.on block
-      var busMarker;
-
       // Listen for the map 'load' event
       map.on("load", async function () {
         // Initialize the source for the bus path
@@ -144,21 +141,6 @@
         // Create a marker element
         var el = document.createElement("div");
         el.className = "marker";
-
-        // Add the marker to the map
-        busMarker = new mapboxgl.Marker(el)
-          .setLngLat([0, 0])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 }).setHTML(
-              "<h3>Bus Details</h3>" +
-                "<p>Driver's Current Location</p>" +
-                `<p>From: </p>` +
-                `<p>To:</p>` +
-                `<p>Via: </p>` +
-                `<p>Time: </p>`
-            )
-          )
-          .addTo(map);
       });
 
       // Listen for WebSocket updates from the server
@@ -191,6 +173,21 @@
             data.sourceLocation,
             data.destinationLocation
           );
+
+          // Add the marker to the map
+          const busMarker = new mapboxgl.Marker(el)
+            .setLngLat([0, 0])
+            .setPopup(
+              new mapboxgl.Popup({ offset: 25 }).setHTML(
+                "<h3>Bus Details</h3>" +
+                  "<p>Driver's Current Location</p>" +
+                  `<p>From: </p>` +
+                  `<p>To:</p>` +
+                  `<p>Via: </p>` +
+                  `<p>Time: </p>`
+              )
+            )
+            .addTo(map);
 
           // Update the bus path with the new coordinates
           const busPath = map.getSource("busPath");
