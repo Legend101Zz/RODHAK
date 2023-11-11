@@ -84,8 +84,8 @@ mongoose
         // Broadcast data to all connected users (excluding the sender)
         console.log(
           "Driver_DATA",
-          data,
-          data["longitude"],
+          // data,
+          // data["longitude"],
           // data[latitude],
           JSON.parse(data)
         );
