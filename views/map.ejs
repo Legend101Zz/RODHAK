@@ -248,8 +248,8 @@
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${location[1]},${location[0]}.json?access_token=${mapboxgl.accessToken}`
         );
 
-        console.log("reverseGeocode", data);
         const data = await response.json();
+        console.log("reverseGeocode", data);
         // Return the formatted location name
         return data.features[0] ? data.features[0].place_name : "N/A";
       }
