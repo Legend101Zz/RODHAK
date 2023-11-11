@@ -137,16 +137,14 @@
         //     coordinates: routePath,
         //   },
         // });
-
-        // Create a marker element
-        var el = document.createElement("div");
-        el.className = "marker";
       });
 
       // Listen for WebSocket updates from the server
       socket.on("broadcastDriverData", async (data) => {
         console.log("Received data:", data);
-
+        // Create a marker element
+        var el = document.createElement("div");
+        el.className = "marker";
         // Add the marker to the map
         const busMarker = new mapboxgl.Marker(el)
           .setLngLat([0, 0])
