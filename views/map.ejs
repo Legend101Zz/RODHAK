@@ -147,6 +147,21 @@
       socket.on("broadcastDriverData", async (data) => {
         console.log("Received data:", data);
 
+        // Add the marker to the map
+        const busMarker = new mapboxgl.Marker(el)
+          .setLngLat([0, 0])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 25 }).setHTML(
+              "<h3>Bus Details</h3>" +
+                "<p>Driver's Current Location</p>" +
+                `<p>From: </p>` +
+                `<p>To:</p>` +
+                `<p>Via: </p>` +
+                `<p>Time: </p>`
+            )
+          )
+          .addTo(map);
+
         // Check if the data is for the specific trip
         const stringWithoutSlash = queryString[1].replace("/", "");
         // if (data.tripID === stringWithoutSlash) {
@@ -173,21 +188,6 @@
             data.sourceLocation,
             data.destinationLocation
           );
-
-          // Add the marker to the map
-          const busMarker = new mapboxgl.Marker(el)
-            .setLngLat([0, 0])
-            .setPopup(
-              new mapboxgl.Popup({ offset: 25 }).setHTML(
-                "<h3>Bus Details</h3>" +
-                  "<p>Driver's Current Location</p>" +
-                  `<p>From: </p>` +
-                  `<p>To:</p>` +
-                  `<p>Via: </p>` +
-                  `<p>Time: </p>`
-              )
-            )
-            .addTo(map);
 
           // Update the bus path with the new coordinates
           const busPath = map.getSource("busPath");
