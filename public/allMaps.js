@@ -15,7 +15,7 @@ function errorLocation(err) {
   setupMap([77.108923, 31.957897]);
 }
 
-const url = `http://195.35.45.35:3000/himraahi/trips`;
+const url = `http://89.116.33.224:3000/himraahi/trips`;
 // const url = "https://api.wheretheiss.at/v1/satellites/25544";
 console.log(url);
 
@@ -121,7 +121,7 @@ function setupMap(center) {
                     new mapboxgl.Popup({ offset: 25 }) // add popups
                       .setHTML(
                         `<h3>${feature.properties.title}</h3><br/><p>From: ${feature.properties.start}</p><p>To: ${feature.properties.end}</p> <br/> 
-                        <a href ="http://195.35.45.35:3000/himraahi/trip/${feature.properties.link}"><b>Link To Trip<b/></a> `
+                        <a href ="http://89.116.33.224:3000/himraahi/trip/${feature.properties.link}"><b>Link To Trip<b/></a> `
                       )
                   )
                   .addTo(map);
