@@ -151,3 +151,31 @@ Dear  your password is :-. Please use this to login again.`,
       });
     });
 };
+
+module.exports.getDriverDetails = async (req, res) => {
+  try {
+    const ownerId = req.params.ownerId;
+
+    // Find the owner by ID
+    const owner = await Owner.findById(ownerId);
+
+    if (!owner) {
+      return res.status(404).json({ message: "Owner not found" });
+    }
+    console.log(owner);
+    // Extract driver details from the owner
+    const drivers = owner.Driver.map((driver) => ({
+      id: driver._id,
+      name: driver.username,
+      email: driver.email,
+      age: driver.age,
+      phone: driver.phone,
+      trips: driver.Trip.length > 0 ? driver.Trip.length : 0,
+    }));
+
+    res.json({ drivers });
+  } catch (error) {
+    console.error("Error getting owner drivers:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

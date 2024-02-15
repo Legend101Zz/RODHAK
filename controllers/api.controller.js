@@ -65,7 +65,7 @@ module.exports.trips = async (req, res, next) => {
       isPublic: 0,
     }
   );
-  // console.log(trips, "hello1");
+  console.log(trips, "hello1");
   res.status(200).send({ message: "Success", data: trips });
 };
 

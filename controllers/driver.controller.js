@@ -16,9 +16,10 @@ const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
+
   auth: {
     user: process.env.GMAIL_MAIL,
-    pass: process.env.GMAIL_PASSWORD,
+    pass: process.env.GMAIL_MAIL,
   },
   port: 465,
   host: "smtp.gmail.com",
@@ -26,6 +27,7 @@ const transporter = nodemailer.createTransport({
 
 transporter.verify((error, success) => {
   if (error) {
+    console.log(process.env.GMAIL_MAIL, process.env.GMAIL_MAIL);
     console.log(error);
   } else {
     //console.log("Lets go babbyy");
@@ -41,82 +43,91 @@ module.exports.renderRegister = (req, res) => {
 //driver register api
 module.exports.DriverRegister = async (req, res, next) => {
   const obj = Object.assign({}, req.files);
+  try {
+    const { email, username, phone, owner, age } = req.body;
+    // console.log(req.body);
+    const user = await Driver.findOne({ email });
+    const own = await Owner.findOne({ email: owner });
+    console.log(owner, own, user, "owner");
+    if (user || !own) {
+      return res.status(401).send({
+        message:
+          "Driver with the given email already exists or the Owner mail is not correct",
+      });
+    }
 
-  const { email, username, phone, owner, age } = req.body;
-  // console.log(req.body);
-  const user = await Driver.findOne({ email: req.body.email });
-  const own = await Owner.findOne({ email: req.body.owner });
-  // console.log(own, "owner");
-  if (user && !own) {
-    return res.status(409).send({
-      message:
-        "Driver with the given email already exists or the Owner mail is not correct",
+    const password = generator.generate({
+      length: 8,
+      numbers: true,
+    });
+
+    const salt = await bcrypt.genSalt(Number(process.env.SALT));
+    const hashPassword = await bcrypt.hash(password, salt);
+    const imagesObj = obj.image;
+    const legalObj = obj.legal;
+    const imagesUrl = imagesObj[0].path;
+    const imagesPath = imagesObj[0].filename;
+    const legalUrl = legalObj[0].path;
+    const legalPath = legalObj[0].filename;
+    imagesArr = [{ url: imagesUrl, filename: imagesPath }];
+    legalArr = [{ url: legalUrl, filename: legalPath }];
+
+    const driver = new Driver({
+      email: email,
+      username: username,
+      phone: phone,
+      age: age,
+      Owner: own._id,
+      password: hashPassword,
+    });
+
+    driver.images = imagesArr.map((f) => ({
+      url: f.url,
+      filename: f.filename,
+    }));
+    driver.legal = legalArr.map((f) => ({ url: f.url, filename: f.filename }));
+
+    await driver
+      .save()
+      .then(async (result) => {
+        // console.log(result, "done");
+        // res.render("users/wait");
+
+        await Owner.findByIdAndUpdate(
+          { _id: own._id },
+          { $push: { Driver: result._id } }
+        );
+
+        const mailOptions = {
+          from: process.env.GMAIL_MAIL,
+          to: email,
+          subject: "Driver Registeration Process initiated successfully",
+          html: `
+        Dear ${username}, Thank you for as a driver  with us \n .Your credentials are :- email:- <b> ${email}</b> , password is :- <b> ${password}</b>. Please use this to login again after we get your details verified.`,
+        };
+
+        transporter.sendMail(mailOptions).then(() => {
+          //email sent and verification saved
+
+          res.render("users/wait");
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(201).json({
+          type: "failure",
+          message: "denial email not sent",
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  } catch (e) {
+    res.status(501).json({
+      type: "failure",
+      message: "server error",
     });
   }
-
-  const password = generator.generate({
-    length: 8,
-    numbers: true,
-  });
-
-  const salt = await bcrypt.genSalt(Number(process.env.SALT));
-  const hashPassword = await bcrypt.hash(password, salt);
-  const imagesObj = obj.image;
-  const legalObj = obj.legal;
-  const imagesUrl = imagesObj[0].path;
-  const imagesPath = imagesObj[0].filename;
-  const legalUrl = legalObj[0].path;
-  const legalPath = legalObj[0].filename;
-  imagesArr = [{ url: imagesUrl, filename: imagesPath }];
-  legalArr = [{ url: legalUrl, filename: legalPath }];
-
-  const driver = new Driver({
-    email: email,
-    username: username,
-    phone: phone,
-    age: age,
-    Owner: own._id,
-    password: hashPassword,
-  });
-
-  driver.images = imagesArr.map((f) => ({ url: f.url, filename: f.filename }));
-  driver.legal = legalArr.map((f) => ({ url: f.url, filename: f.filename }));
-
-  await driver
-    .save()
-    .then(async (result) => {
-      // console.log(result, "done");
-      // res.render("users/wait");
-
-      await Owner.findByIdAndUpdate(
-        { _id: own._id },
-        { $push: { Driver: result._id } }
-      );
-
-      const mailOptions = {
-        from: process.env.GMAIL_MAIL,
-        to: email,
-        subject: "Driver Registeration Process initiated successfully",
-        html: `
-        Dear ${username}, Thank you for as a driver  with us \n .Your credentials are :- email:- <b> ${email}</b> , password is :- <b> ${password}</b>. Please use this to login again after we get your details verified.`,
-      };
-
-      transporter.sendMail(mailOptions).then(() => {
-        //email sent and verification saved
-
-        res.render("users/wait");
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(201).json({
-        type: "failure",
-        message: "denial email not sent",
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
 };
 
 //Login
@@ -601,6 +612,89 @@ module.exports.createTripApi = async (req, res, next) => {
     console.log(err);
     return res.status(500).json({
       type: "server failure",
+    });
+  }
+};
+
+// ====== DRIVER REGISTER API =========
+
+module.exports.DriverRegisterAPI = async (req, res) => {
+  try {
+    const obj = Object.assign({}, req.files);
+    const { ownId, username, phone, email, age } = req.body;
+    console.log(req.body, req.files);
+    const user = await Driver.findOne({ email });
+    const own = await Owner.findById(JSON.parse(ownId));
+
+    if (user || !own) {
+      return res.status(401).json({
+        message: "Driver with the given email already exists",
+      });
+    }
+
+    const password = generator.generate({
+      length: 8,
+      numbers: true,
+    });
+
+    const salt = await bcrypt.genSalt(Number(process.env.SALT));
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    const imagesObj = obj.image;
+    const legalObj = obj.legal;
+    const imagesUrl = imagesObj[0].path;
+    const imagesPath = imagesObj[0].filename;
+    const legalUrl = legalObj[0].path;
+    const legalPath = legalObj[0].filename;
+
+    const imagesArr = [{ url: imagesUrl, filename: imagesPath }];
+    const legalArr = [{ url: legalUrl, filename: legalPath }];
+
+    const driver = new Driver({
+      email,
+      username,
+      phone,
+      age,
+      Owner: own._id,
+      password: hashPassword,
+      images: imagesArr.map((f) => ({ url: f.url, filename: f.filename })),
+      legal: legalArr.map((f) => ({ url: f.url, filename: f.filename })),
+    });
+
+    const savedDriver = await driver.save();
+    await Owner.findByIdAndUpdate(
+      { _id: own._id },
+      { $push: { Driver: savedDriver._id } }
+    );
+
+    // Sending registration email
+    const mailOptions = {
+      from: process.env.GMAIL_MAIL,
+      to: email,
+      subject: "Driver Registration Process initiated successfully",
+      html: `Dear ${username}, Thank you for registering as a driver with us. Your credentials are: email - <b>${email}</b>, password - <b>${password}</b>. Please use this to login again after we get your details verified.`,
+    };
+
+    // Assume `transporter` is properly configured
+    transporter.sendMail(mailOptions, (error) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({
+          type: "failure",
+          message: "Email not sent",
+        });
+      }
+      res.status(200).json({
+        type: "success",
+        message: "Driver registration successful!",
+        driverId: savedDriver._id,
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      type: "failure",
+      message: "Server error",
     });
   }
 };

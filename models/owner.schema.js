@@ -31,7 +31,7 @@ const OwnerSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "Driver",
-        autopopulate: { select: "email Trip" },
+        autopopulate: { select: "email Trip username age phone" },
       },
     ],
     Vehicle: [

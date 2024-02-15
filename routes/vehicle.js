@@ -6,4 +6,6 @@ const vehicle = require("../controllers/vehicle.controller");
 
 router.route("/register").post(vehicle.register);
 
+router.route("/owner/:ownerId").get(vehicle.getVehicles);
+
 module.exports = router;

@@ -15,6 +15,11 @@ router
     ]),
     owners.register
   );
+
+// apis
+
+router.route("/getDriverDetails/:ownerId").get(owners.getDriverDetails);
+
 //route for testing email service:
 router.route("/test").get(owners.test);
 
