@@ -1,3 +1,4 @@
+import { SOCKET_URL } from "./url";
 mapboxgl.accessToken = mapId;
 
 navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
@@ -15,7 +16,7 @@ function errorLocation(err) {
   setupMap([77.108923, 31.957897]);
 }
 
-const url = `http://89.116.33.224:3000/himraahi/trips`;
+const url = `${SOCKET_URL}/himraahi/trips`;
 // const url = "https://api.wheretheiss.at/v1/satellites/25544";
 console.log(url);
 

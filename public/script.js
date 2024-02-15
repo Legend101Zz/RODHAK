@@ -1,8 +1,9 @@
+import { SOCKET_URL } from "./url";
 mapboxgl.accessToken = mapId;
 
 const queryString = window.location.pathname.split("p");
 console.log(queryString[1], "here");
-const url = `http://89.116.33.224:3000/himraahi/map${queryString[1]}`;
+const url = `${SOCKET_URL}/himraahi/map${queryString[1]}`;
 // const url = "https://api.wheretheiss.at/v1/satellites/25544";
 console.log(url);
 

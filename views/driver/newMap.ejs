@@ -76,7 +76,8 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
-      const socket = io("http://195.35.45.35:3000/");
+      let SOCKET_URL = "http://localhost:3000/";
+      const socket = io(`${SOCKET_URL}`);
 
       socket.on("connect", () => {
         console.log("Connected");

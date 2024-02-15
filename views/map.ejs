@@ -52,14 +52,17 @@
   <body>
     <div id="map"></div>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/leaflet-ease/leaflet-ease.js"></script>
     <script>
       // Your Mapbox access token
       var mapId = "<%=env%>";
       let data;
+      let SOCKET_URL = "http://localhost:3000/";
+
       mapboxgl.accessToken = mapId;
 
       // Create a socket connection
-      const socket = io("http://89.116.33.224:3000/");
+      const socket = io(`${SOCKET_URL}`);
 
       // Event handler for socket connection
       socket.on("connect", () => {
@@ -159,82 +162,88 @@
 
       // Listen for WebSocket updates from the server
       socket.on("broadcastDriverData", async (data) => {
-        console.log("Received data:", data);
-
         // Check if the data is for the specific trip
         const stringWithoutSlash = queryString[1].replace("/", "");
-        // if (data.tripID === stringWithoutSlash) {
-        console.log("Got coords for Hardy", data);
-        let via;
-        if (data.viaLocation) {
-          via = await reverseGeocode(data.viaLocation);
-        }
+        if (data.tripID === stringWithoutSlash) {
+          console.log("Received data:", data);
+          console.log("In it's space:", data.tripID, stringWithoutSlash);
+          console.log("Got coords for Hardy", data);
+          let via;
+          if (data.viaLocation) {
+            via = await reverseGeocode(data.viaLocation);
+          }
 
-        // Update the marker's location
-        if (!isNaN(data.longitude) && !isNaN(data.latitude)) {
-          busMarker.setLngLat([data.longitude, data.latitude]);
-        } else {
-          console.error(
-            "Invalid latitude or longitude in the received data:",
-            data
-          );
-        }
+          // Update the marker's location
+          if (!isNaN(data.longitude) && !isNaN(data.latitude)) {
+            busMarker.setLngLat([data.longitude, data.latitude]);
+          } else {
+            console.error(
+              "Invalid latitude or longitude in the received data:",
+              data
+            );
+          }
 
-        // Check if sourceLocation and destinationLocation are available
-        if (data.sourceLocation && data.destinationLocation) {
-          // Initialize the path between sourceLocation and destinationLocation
-          const routePath = await getRoutePath(
-            data.sourceLocation,
-            data.destinationLocation
-          );
+          // Check if sourceLocation and destinationLocation are available
+          if (data.sourceLocation && data.destinationLocation) {
+            // Initialize the path between sourceLocation and destinationLocation
+            const routePath = await getRoutePath(
+              data.sourceLocation,
+              data.destinationLocation
+            );
+
+            console.log("routePath", routePath);
+            // Update the bus path with the new coordinates
+            const busPath = map.getSource("busPath");
+
+            const pathCoordinates = busPath._data.geometry.coordinates;
+            pathCoordinates.push(...routePath);
+
+            busPath.setData({
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "LineString",
+                coordinates: pathCoordinate,
+              },
+            });
+          }
 
           // Update the bus path with the new coordinates
           const busPath = map.getSource("busPath");
+          const pathCoordinates = busPath._data.geometry.coordinates;
+          pathCoordinates.push([data.longitude, data.latitude]);
           busPath.setData({
             type: "Feature",
             properties: {},
             geometry: {
               type: "LineString",
-              coordinates: routePath,
+              coordinates: pathCoordinates,
             },
           });
+          // Update the popup content
+          busMarker
+            .getPopup()
+            .setHTML(
+              "<h3>Bus Details</h3>" +
+                "<p>Driver's Current Location</p>" +
+                `<p>From: ${await reverseGeocode(data.sourceLocation)}</p>` +
+                `<p>To: ${await reverseGeocode(data.destinationLocation)}</p>` +
+                `<p>Via: ${via || "N/A"}</p>` +
+                `<p>Time: ${formatTime(data.currentTime)}</p>`
+            );
+
+          // Fly to the updated location with a smooth transition
+          map.flyTo({
+            center: [data.longitude, data.latitude],
+            speed: 0.6,
+          });
+          // }
         }
-
-        // Update the bus path with the new coordinates
-        const busPath = map.getSource("busPath");
-        const pathCoordinates = busPath._data.geometry.coordinates;
-        pathCoordinates.push([data.longitude, data.latitude]);
-        busPath.setData({
-          type: "Feature",
-          properties: {},
-          geometry: {
-            type: "LineString",
-            coordinates: pathCoordinates,
-          },
-        });
-        // Update the popup content
-        busMarker
-          .getPopup()
-          .setHTML(
-            "<h3>Bus Details</h3>" +
-              "<p>Driver's Current Location</p>" +
-              `<p>From: ${await reverseGeocode(data.sourceLocation)}</p>` +
-              `<p>To: ${await reverseGeocode(data.destinationLocation)}</p>` +
-              `<p>Via: ${via || "N/A"}</p>` +
-              `<p>Time: ${formatTime(data.currentTime)}</p>`
-          );
-
-        // Fly to the updated location with a smooth transition
-        map.flyTo({
-          center: [data.longitude, data.latitude],
-          speed: 0.5,
-        });
-        // }
       });
 
       // Function to get the route path between sourceLocation and destinationLocation
       async function getRoutePath(sourceLocation, destinationLocation) {
-        console.log(sourceLocation, destinationLocation);
+        console.log("getPath-S,D", sourceLocation, destinationLocation);
         const response = await fetch(
           `https://api.mapbox.com/directions/v5/mapbox/driving/${sourceLocation[1]},${sourceLocation[0]};${destinationLocation[1]},${destinationLocation[0]}?geometries=geojson&access_token=${mapboxgl.accessToken}`
         );
