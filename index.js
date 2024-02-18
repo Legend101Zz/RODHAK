@@ -122,6 +122,7 @@ mongoose
 
       socket.on("driverData", async (data) => {
         // Broadcast data to all connected users (excluding the sender)
+        console.log("inside driver event");
         console.log(
           "Driver_DATA",
           // data,
