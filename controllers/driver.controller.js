@@ -12,27 +12,27 @@ const Owner = require("../models/owner.schema");
 const Vehicle = require("../models/vehicle.schema");
 
 //mail-setup
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
 
-  auth: {
-    user: process.env.GMAIL_MAIL,
-    pass: process.env.GMAIL_MAIL,
-  },
-  port: 465,
-  host: "smtp.gmail.com",
-});
+//   auth: {
+//     user: process.env.GMAIL_MAIL,
+//     pass: process.env.GMAIL_MAIL,
+//   },
+//   port: 465,
+//   host: "smtp.gmail.com",
+// });
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.log(process.env.GMAIL_MAIL, process.env.GMAIL_MAIL);
-    console.log(error);
-  } else {
-    //console.log("Lets go babbyy");
-  }
-});
+// transporter.verify((error, success) => {
+//   if (error) {
+//     console.log(process.env.GMAIL_MAIL, process.env.GMAIL_MAIL);
+//     console.log(error);
+//   } else {
+//     //console.log("Lets go babbyy");
+//   }
+// });
 
 //testing
 
@@ -44,7 +44,7 @@ module.exports.renderRegister = (req, res) => {
 module.exports.DriverRegister = async (req, res, next) => {
   const obj = Object.assign({}, req.files);
   try {
-    const { email, username, phone, owner, age } = req.body;
+    const { email, username, phone, owner, age, password } = req.body;
     // console.log(req.body);
     const user = await Driver.findOne({ email });
     const own = await Owner.findOne({ email: owner });
@@ -55,11 +55,6 @@ module.exports.DriverRegister = async (req, res, next) => {
           "Driver with the given email already exists or the Owner mail is not correct",
       });
     }
-
-    const password = generator.generate({
-      length: 8,
-      numbers: true,
-    });
 
     const salt = await bcrypt.genSalt(Number(process.env.SALT));
     const hashPassword = await bcrypt.hash(password, salt);
@@ -98,25 +93,26 @@ module.exports.DriverRegister = async (req, res, next) => {
           { $push: { Driver: result._id } }
         );
 
-        const mailOptions = {
-          from: process.env.GMAIL_MAIL,
-          to: email,
-          subject: "Driver Registeration Process initiated successfully",
-          html: `
-        Dear ${username}, Thank you for as a driver  with us \n .Your credentials are :- email:- <b> ${email}</b> , password is :- <b> ${password}</b>. Please use this to login again after we get your details verified.`,
-        };
+        // const mailOptions = {
+        //   from: process.env.GMAIL_MAIL,
+        //   to: email,
+        //   subject: "Driver Registeration Process initiated successfully",
+        //   html: `
+        // Dear ${username}, Thank you for as a driver  with us \n .Your credentials are :- email:- <b> ${email}</b> , password is :- <b> ${password}</b>. Please use this to login again after we get your details verified.`,
+        // };
 
-        transporter.sendMail(mailOptions).then(() => {
-          //email sent and verification saved
+        // transporter.sendMail(mailOptions).then(() => {
+        //   //email sent and verification saved
 
-          res.render("users/wait");
-        });
+        // });
+
+        res.render("users/wait");
       })
       .catch((err) => {
         console.log(err);
         res.status(201).json({
           type: "failure",
-          message: "denial email not sent",
+          message: "server error",
         });
       })
       .catch((err) => {
@@ -621,7 +617,7 @@ module.exports.createTripApi = async (req, res, next) => {
 module.exports.DriverRegisterAPI = async (req, res) => {
   try {
     const obj = Object.assign({}, req.files);
-    const { ownId, username, phone, email, age } = req.body;
+    const { ownId, username, phone, email, age, password } = req.body;
     console.log(req.body, req.files);
     const user = await Driver.findOne({ email });
     const own = await Owner.findById(JSON.parse(ownId));
@@ -631,11 +627,6 @@ module.exports.DriverRegisterAPI = async (req, res) => {
         message: "Driver with the given email already exists",
       });
     }
-
-    const password = generator.generate({
-      length: 8,
-      numbers: true,
-    });
 
     const salt = await bcrypt.genSalt(Number(process.env.SALT));
     const hashPassword = await bcrypt.hash(password, salt);
@@ -667,29 +658,30 @@ module.exports.DriverRegisterAPI = async (req, res) => {
       { $push: { Driver: savedDriver._id } }
     );
 
-    // Sending registration email
-    const mailOptions = {
-      from: process.env.GMAIL_MAIL,
-      to: email,
-      subject: "Driver Registration Process initiated successfully",
-      html: `Dear ${username}, Thank you for registering as a driver with us. Your credentials are: email - <b>${email}</b>, password - <b>${password}</b>. Please use this to login again after we get your details verified.`,
-    };
-
-    // Assume `transporter` is properly configured
-    transporter.sendMail(mailOptions, (error) => {
-      if (error) {
-        console.error(error);
-        return res.status(500).json({
-          type: "failure",
-          message: "Email not sent",
-        });
-      }
-      res.status(200).json({
-        type: "success",
-        message: "Driver registration successful!",
-        driverId: savedDriver._id,
-      });
+    res.status(200).json({
+      type: "success",
+      message: "Driver registration successful!",
+      driverId: savedDriver._id,
     });
+    // Sending registration email
+    // const mailOptions = {
+    //   from: process.env.GMAIL_MAIL,
+    //   to: email,
+    //   subject: "Driver Registration Process initiated successfully",
+    //   html: `Dear ${username}, Thank you for registering as a driver with us. Your credentials are: email - <b>${email}</b>, password - <b>${password}</b>. Please use this to login again after we get your details verified.`,
+    // };
+
+    // // Assume `transporter` is properly configured
+    // transporter.sendMail(mailOptions, (error) => {
+    //   if (error) {
+    //     console.error(error);
+    //     return res.status(500).json({
+    //       type: "failure",
+    //       message: "Email not sent",
+    //     });
+    //   }
+
+    // });
   } catch (error) {
     console.error(error);
     res.status(500).json({

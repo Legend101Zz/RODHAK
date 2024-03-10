@@ -125,7 +125,7 @@ mongoose
         console.log("inside driver event");
         console.log(
           "Driver_DATA",
-          // data,
+          data,
           // data["longitude"],
           // data[latitude],
           JSON.parse(data)
