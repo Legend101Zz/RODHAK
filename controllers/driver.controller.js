@@ -403,59 +403,79 @@ module.exports.endTripApi = async (req, res, next) => {
 };
 
 module.exports.loginVerifyApi = async (req, res, next) => {
-  const plainPassword = req.body.password; // Password from the request
+  const plainPassword = req.body.password;
   const email = req.body.mail;
 
   try {
-    const driver = await Driver.findOne({ email: email }).select(" -legal");
+    const driver = await Driver.findOne({ email }).select(" -legal");
 
-    if (driver) {
-      // Compare the provided password with the hashed password in the database
-      const passwordMatch = await bcrypt.compare(
-        plainPassword,
-        driver.password
-      );
-
-      if (passwordMatch) {
-        // Passwords match
-        // Count the total number of Trip objects
-        const totalTrips = driver.Trip.length;
-
-        // Extract the 'url' from each 'images' object
-        const imageUrls = driver.images.map((image) => image.url);
-
-        return res.status(200).json({
-          message: "success",
-          data: {
-            _id: driver._id,
-            name: driver.name,
-            username: driver.username,
-            email: driver.email,
-            phone: driver.phone,
-            age: driver.age,
-            isVerified: driver.isVerified,
-            totalTrips: totalTrips,
-            imageUrls: imageUrls,
-          },
-        });
-      } else {
-        // Passwords do not match
-        res.status(401).json({
-          type: "failure",
-          message: "Invalid credentials",
-        });
-      }
-    } else {
-      // No driver found with the given email
-      res.status(401).json({
+    if (!driver) {
+      return res.status(401).json({
         type: "failure",
         message: "Invalid credentials",
       });
     }
+
+    const passwordMatch = await bcrypt.compare(plainPassword, driver.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        type: "failure",
+        message: "Invalid credentials",
+      });
+    }
+
+    const totalTrips = driver.Trip.length.toString();
+    const imageUrls = driver.images.map((image) => image.url);
+
+    return res.status(200).json({
+      message: "success",
+      data: {
+        _id: driver._id,
+        name: driver.name,
+        username: driver.username,
+        email: driver.email,
+        phone: driver.phone,
+        age: driver.age,
+        isVerified: driver.isVerified,
+        totalTrips,
+        imageUrls,
+      },
+    });
   } catch (err) {
-    // Handle server errors
     console.error(err);
-    res.status(500).json({
+    return res.status(500).json({
+      type: "server failure",
+      message: "Internal server error",
+    });
+  }
+};
+
+module.exports.getActiveTrips = async (req, res, next) => {
+  const driverId = req.params.driverId;
+  try {
+    const activeTrips = await Trip.find({
+      Driver: driverId,
+      isFinished: false,
+    })
+      .select(
+        "-_id isFinished isPublic Type Vehicle Start End start_time viaRoute"
+      )
+      .lean();
+
+    if (activeTrips.length != 0)
+      activeTrips.forEach((trip) => {
+        console.log(trip.Driver);
+        delete trip.Driver;
+      });
+
+    return res.status(200).json({
+      message: "success",
+      data: activeTrips,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
       type: "server failure",
       message: "Internal server error",
     });
