@@ -67,6 +67,7 @@
       let data;
       var destination, line;
       var soldier;
+      var routePath;
       // let SOCKET_URL = "https://himraahi.in/";
       let SOCKET_URL = "http://localhost:3000/";
       mapboxgl.accessToken = mapId;
@@ -81,7 +82,7 @@
 
       // Extract the trip ID from the URL
       const queryString = window.location.pathname.split("p");
-      console.log(queryString[1], "here");
+      const tripId = queryString[1].replace("/", "");
 
       // Initialize the map with a placeholder location
       var map = new mapboxgl.Map({
@@ -113,6 +114,8 @@
 
       // Listen for the map 'load' event
       map.on("load", async function () {
+        routePath = await getRoutePath(tripId);
+        console.log("Route Path", routePath);
         // Initialize the source for the bus path
         map.addSource("busPath", {
           type: "geojson",
@@ -163,7 +166,7 @@
           },
           paint: {
             "line-color": "#007BFF", // Completed path color
-            "line-width": 2, // Line width
+            "line-width": 5, // Line width
           },
         });
 
@@ -177,8 +180,9 @@
             "line-cap": "round",
           },
           paint: {
-            "line-color": "#AAAAAA", // Remaining path color
-            "line-width": 2, // Line width
+            "line-color": "#FF0000", // Remaining path color
+            "line-width": 5,
+            "line-opacity": 0.5, // Line width
           },
         });
 
@@ -188,14 +192,6 @@
         //   data.destinationLocation
         // );
         // const busPath = map.getSource("busPath");
-        // busPath.setData({
-        //   type: "Feature",
-        //   properties: {},
-        //   geometry: {
-        //     type: "LineString",
-        //     coordinates: routePath,
-        //   },
-        // });
       });
 
       // Listen for WebSocket updates from the server
@@ -208,13 +204,15 @@
           console.log("Got coords for Hardy", data);
           console.log("3d model", soldier);
           let via;
-          if (data.viaLocation) {
-            via = await reverseGeocode(data.viaLocation);
-          }
+          // if (data.viaLocation) {
+          //   via = await reverseGeocode(data.viaLocation);
+          // }
 
           // Update the marker's location
-          if (!isNaN(data.longitude) && !isNaN(data.latitude && soldier)) {
-            soldier.setCoords([data.longitude, data.latitude]);
+          if (!isNaN(data.longitude) && !isNaN(data.latitude) && soldier) {
+            // soldier.setCoords([data.longitude, data.latitude]);
+            console.log("soldier here ", soldier);
+            // soldier.position.set(data.longitude, data.latitude, 0);
             // busMarker.setLngLat([data.longitude, data.latitude]);
           } else {
             console.error(
@@ -225,85 +223,77 @@
 
           // Check if sourceLocation and destinationLocation are available
           if (data.sourceLocation && data.destinationLocation) {
-            // Initialize the path between sourceLocation and destinationLocation
-            const routePath = await getRoutePath(
-              data.sourceLocation,
-              data.destinationLocation
-            );
-
-            console.log("routePath", routePath);
             // Update the bus path with the new coordinates
             const busPath = map.getSource("busPath");
-
-            const pathCoordinates = busPath._data.geometry.coordinates;
-            pathCoordinates.push(...routePath);
 
             busPath.setData({
               type: "Feature",
               properties: {},
               geometry: {
                 type: "LineString",
-                coordinates: pathCoordinate,
+                coordinates: routePath,
               },
+            });
+
+            soldier.followPath({
+              path: routePath,
+              duration: 100000, // Adjust duration as needed
+              trackHeading: true, // Rotate the object to stay aligned with the direction of travel
             });
           }
 
-          // Update the bus path with the new coordinates
-          const busPath = map.getSource("busPath");
-          const pathCoordinates = busPath._data.geometry.coordinates;
-          pathCoordinates.push([data.longitude, data.latitude]);
-          busPath.setData({
-            type: "Feature",
-            properties: {},
-            geometry: {
-              type: "LineString",
-              coordinates: pathCoordinates,
-            },
-          });
           // Update the popup content
-          busMarker
-            .getPopup()
-            .setHTML(
-              "<h3>Bus Details</h3>" +
-                "<p>Driver's Current Location</p>" +
-                `<p>From: ${await reverseGeocode(data.sourceLocation)}</p>` +
-                `<p>To: ${await reverseGeocode(data.destinationLocation)}</p>` +
-                `<p>Via: ${via || "N/A"}</p>` +
-                `<p>Time: ${formatTime(data.currentTime)}</p>`
-            );
+          // busMarker
+          //   .getPopup()
+          //   .setHTML(
+          //     "<h3>Bus Details</h3>" +
+          //       "<p>Driver's Current Location</p>" +
+          //       `<p>From: ${await reverseGeocode(data.sourceLocation)}</p>` +
+          //       `<p>To: ${await reverseGeocode(data.destinationLocation)}</p>` +
+          //       `<p>Via: ${via || "N/A"}</p>` +
+          //       `<p>Time: ${formatTime(data.currentTime)}</p>`
+          //   );
 
           // Fly to the updated location with a smooth transition
-          map.flyTo({
-            center: [data.longitude, data.latitude],
-            speed: 0.6,
-          });
+          // map.flyTo({
+          //   center: [data.longitude, data.latitude],
+          //   speed: 0.6,
+          // });
           // }
         }
       });
 
       // Function to get the route path between sourceLocation and destinationLocation
-      async function getRoutePath(sourceLocation, destinationLocation) {
-        console.log("getPath-S,D", sourceLocation, destinationLocation);
-        const response = await fetch(
-          `https://api.mapbox.com/directions/v5/mapbox/driving/${sourceLocation[1]},${sourceLocation[0]};${destinationLocation[1]},${destinationLocation[0]}?geometries=geojson&access_token=${mapboxgl.accessToken}`
-        );
+      async function getRoutePath(tripId) {
+        try {
+          const response = await fetch(`/himraahi/trip/Coords/${tripId}`);
+          const tripData = await response.json();
+          console.log("trip response", tripData);
+          const sourceLocation = tripData.coordinateStart;
+          const destinationLocation = tripData.coordinateEnd;
 
-        const data = await response.json();
-        console.log("getRoutePath", data);
-        return data.routes[0].geometry.coordinates;
+          const response2 = await fetch(
+            `https://api.mapbox.com/directions/v5/mapbox/driving/${sourceLocation[0]},${sourceLocation[1]};${destinationLocation[0]},${destinationLocation[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`
+          );
+          const data = await response2.json();
+          console.log("trip response 2", data);
+          return data.routes[0].geometry.coordinates;
+        } catch (error) {
+          console.error("Error fetching route path:", error);
+          return [];
+        }
       }
-
       // Function to perform reverse geocoding
-      async function reverseGeocode(location) {
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${location[1]},${location[0]}.json?types=poi&access_token=${mapboxgl.accessToken}`
-        );
+      // async function reverseGeocode(location) {
+      //   const response = await fetch(
+      //     `https://api.mapbox.com/geocoding/v5/mapbox.places/${location[1]},${location[0]}.json?types=poi&access_token=${mapboxgl.accessToken}`
+      //   );
 
-        const data = await response.json();
-        console.log("reverseGeocode", data);
-        // Return the formatted location name
-        return data.features[0] ? data.features[0].place_name : "N/A";
-      }
+      //   const data = await response.json();
+      //   console.log("reverseGeocode", data);
+      //   // Return the formatted location name
+      //   return data.features[0] ? data.features[0].place_name : "N/A";
+      // }
 
       // Function to format the time
       function formatTime(currentTime) {
@@ -313,3 +303,5 @@
     </script>
   </body>
 </html>
+
+<!-- done movement of 3d model , but currently it's moving on a predefined route path , need to have anither route that is the tarveled coordinates array and then show that in green . -->

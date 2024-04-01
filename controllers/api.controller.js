@@ -91,6 +91,32 @@ module.exports.trip = async (req, res, next) => {
   }
 };
 
+// get start and end coords of a single trip
+
+module.exports.getTripCoordsData = async (req, res) => {
+  const tripId = req.params.id;
+
+  try {
+    // Find the trip by ID
+    const trip = await Trip.findById(tripId);
+
+    if (!trip) {
+      return res.status(404).json({ error: "Trip not found" });
+    }
+
+    // Extract start and end coordinates
+    const { coordinateStart, coordinateEnd } = trip;
+
+    res.json({
+      coordinateStart,
+      coordinateEnd,
+    });
+  } catch (error) {
+    console.error("Error fetching trip coordinates:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 //map-rendering
 module.exports.singleTrip = async (req, res, next) => {
   // console.log(req.params.tripId);

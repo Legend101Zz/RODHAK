@@ -459,7 +459,7 @@ module.exports.getActiveTrips = async (req, res, next) => {
       isFinished: false,
     })
       .select(
-        "-_id isFinished isPublic Type Vehicle Start End start_time viaRoute"
+        "_id isFinished isPublic Type Vehicle coordinateStart coordinateEnd start_time viaRoute"
       )
       .lean();
 

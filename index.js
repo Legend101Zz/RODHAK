@@ -97,26 +97,33 @@ mongoose
           viaLocation: "Via",
           currentTime: new Date().toLocaleTimeString(),
         };
-        console.log("veh 1 ", data.latitude);
-        if (data) socket.broadcast.emit("broadcastDriverData", data);
+        console.log("veh 1 ", data.latitude, data.longitude);
+        if (
+          data &&
+          data.latitude >= -90 &&
+          data.latitude <= 90 &&
+          data.longitude >= -180 &&
+          data.longitude <= 180
+        )
+          socket.broadcast.emit("broadcastDriverData", data);
       }, 2000);
 
-      setInterval(() => {
-        const latitude = parseFloat(faker.address.latitude());
-        const longitude = parseFloat(faker.address.longitude());
+      // setInterval(() => {
+      //   const latitude = parseFloat(faker.address.latitude());
+      //   const longitude = parseFloat(faker.address.longitude());
 
-        data2 = {
-          tripID: "6526e2ad7c615a02e43a1067",
-          latitude: latitude,
-          longitude: longitude,
-          sourceLocation: "Kullu, H.P",
-          destinationLocation: "Shimla ,H.P",
-          viaLocation: "Via",
-          currentTime: new Date().toLocaleTimeString(),
-        };
-        console.log("veh 2 ", data2.latitude);
-        if (data) socket.broadcast.emit("broadcastDriverData", data2);
-      }, 2000);
+      //   data2 = {
+      //     tripID: "6526e2ad7c615a02e43a1067",
+      //     latitude: latitude,
+      //     longitude: longitude,
+      //     sourceLocation: "Kullu, H.P",
+      //     destinationLocation: "Shimla ,H.P",
+      //     viaLocation: "Via",
+      //     currentTime: new Date().toLocaleTimeString(),
+      //   };
+      //   console.log("veh 2 ", data2.latitude);
+      //   if (data) socket.broadcast.emit("broadcastDriverData", data2);
+      // }, 2000);
 
       // ========= CODE TO CHECK ENDS //////////
 
