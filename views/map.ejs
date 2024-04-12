@@ -54,6 +54,7 @@
 
       .legend-item {
         margin-bottom: 5px;
+        width: 200px;
       }
 
       .legend-item span {
@@ -75,6 +76,82 @@
       .legend-item .label {
         vertical-align: super;
       }
+
+      .modal {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        backdrop-filter: blur(10px);
+        max-height: 300px;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+      }
+
+      .modal.minimized {
+        max-height: 40px;
+        padding: 10px;
+      }
+
+      .modal-content {
+        text-align: center;
+        position: relative;
+      }
+
+      .minimize-button {
+        position: absolute;
+        top: -25px;
+        right: -5px;
+        cursor: pointer;
+        font-size: 26px;
+        background-color: transparent;
+        border: 3px solid rgba(0, 0, 0, 0.8);
+        color: #333;
+        transition: color 0.3s ease; /* Smooth color transition */
+      }
+
+      @media (max-width: 767px) {
+        #legend {
+          top: 5px;
+          right: 5px;
+          padding: 5px;
+        }
+
+        .legend-item {
+          margin-bottom: 3px;
+          width: 150px;
+        }
+
+        .legend-item span {
+          width: 15px;
+          height: 15px;
+          margin-right: 3px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        #legend {
+          top: 5px;
+          right: 5px;
+          padding: 5px;
+          font-size: 12px;
+        }
+
+        .legend-item {
+          margin-bottom: 2px;
+          width: 120px;
+        }
+
+        .legend-item span {
+          width: 12px;
+          height: 12px;
+          margin-right: 2px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -87,6 +164,22 @@
       <div class="legend-item">
         <span class="color-green"></span>
         <span class="label">Distance traveled</span>
+      </div>
+    </div>
+    <div id="infoModal" class="modal">
+      <div class="modal-content">
+        <h2>Route Information</h2>
+        <p>
+          <strong>Source Location:</strong> <span id="sourceLocation"></span>
+        </p>
+        <p>
+          <strong>Destination Location:</strong>
+          <span id="destinationLocation"></span>
+        </p>
+        <p><strong>Via Location:</strong> <span id="viaLocation"></span></p>
+        <p>
+          <strong>Last Updated Time:</strong> <span id="lastUpdatedTime"></span>
+        </p>
       </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
@@ -103,15 +196,36 @@
       let SOCKET_URL = "http://localhost:3000/";
       mapboxgl.accessToken = mapId;
 
-      let stats;
-      import Stats from "https://threejs.org/examples/jsm/libs/stats.module.js";
-      function animate() {
-        requestAnimationFrame(animate);
-        stats.update();
-      }
-
       // Create a socket connection
       const socket = io(`${SOCKET_URL}`);
+
+      // Add the minimize button to the modal
+      const modal = document.querySelector("#infoModal");
+      const minimizeButton = document.createElement("button");
+      minimizeButton.classList.add("minimize-button");
+      minimizeButton.textContent = "-";
+      minimizeButton.addEventListener("click", () => {
+        modal.classList.toggle("minimized");
+      });
+
+      const modalContent = document.querySelector(".modal-content");
+      modalContent.appendChild(minimizeButton);
+
+      // Update the modal content with the route information
+      function updateModalContent(routeInfo) {
+        const {
+          sourceLocation,
+          destinationLocation,
+          viaLocation,
+          currentTime,
+        } = routeInfo;
+        console.log("route info", routeInfo);
+        document.getElementById("sourceLocation").textContent = sourceLocation;
+        document.getElementById("destinationLocation").textContent =
+          destinationLocation;
+        document.getElementById("viaLocation").textContent = viaLocation;
+        document.getElementById("lastUpdatedTime").textContent = currentTime;
+      }
 
       // Event handler for socket connection
       socket.on("connect", () => {
@@ -141,10 +255,6 @@
 
       // Listen for the map 'load' event
       map.on("load", async function () {
-        // stats
-        // stats = new Stats();
-        // map.getContainer().appendChild(stats.dom);
-        // animate();
         routePath = await getRoutePath(tripId);
         console.log("Route Path", routePath);
         // Initialize the source for the bus path
@@ -229,10 +339,9 @@
         const stringWithoutSlash = queryString[1].replace("/", "");
         if (data.tripID === stringWithoutSlash) {
           let via;
-
+          updateModalContent(data);
           // Update the marker's location
           if (!isNaN(data.longitude) && !isNaN(data.latitude) && soldier) {
-            // soldier.setCoords([data.longitude, data.latitude]);
             console.log("data from sockets ", data);
 
             soldier.setCoords([data.longitude, data.latitude]);
