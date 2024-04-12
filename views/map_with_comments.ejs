@@ -38,57 +38,27 @@
       #map {
         height: 100vh;
         width: 100vw;
-        position: relative;
       }
-
-      #legend {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: rgba(255, 255, 255, 0.3); /* Translucent background */
-        border: 1px solid rgba(0, 0, 0, 0.1); /* Border */
-        border-radius: 10px; /* Rounded corners */
-        padding: 10px;
-        font-family: Arial, sans-serif;
-      }
-
-      .legend-item {
-        margin-bottom: 5px;
-      }
-
-      .legend-item span {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        margin-right: 5px;
+      .marker {
+        background-image: url("/bus.png");
+        background-size: cover;
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
+        cursor: pointer;
+      }
+      .mapboxgl-popup {
+        max-width: 200px;
       }
 
-      .legend-item .color-red {
-        background-color: #ff0000;
-      }
-
-      .legend-item .color-green {
-        background-color: #00ff00;
-      }
-
-      .legend-item .label {
-        vertical-align: super;
+      .mapboxgl-popup-content {
+        text-align: center;
+        font-family: "Open Sans", sans-serif;
       }
     </style>
   </head>
   <body>
     <div id="map"></div>
-    <div id="legend">
-      <div class="legend-item">
-        <span class="color-red"></span>
-        <span class="label">Distance to be traveled</span>
-      </div>
-      <div class="legend-item">
-        <span class="color-green"></span>
-        <span class="label">Distance traveled</span>
-      </div>
-    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet-ease/leaflet-ease.js"></script>
     <script type="module">
@@ -98,7 +68,6 @@
       var destination, line;
       var soldier;
       var routePath;
-      var lineGeometry;
       // let SOCKET_URL = "https://himraahi.in/";
       let SOCKET_URL = "http://localhost:3000/";
       mapboxgl.accessToken = mapId;
@@ -127,7 +96,7 @@
         container: "map",
         style: "mapbox://styles/mapbox/streets-v9",
         center: [0, 0], // Placeholder center
-        zoom: 12,
+        zoom: 18,
         pitch: 60,
         bearing: 0,
       });
@@ -135,6 +104,20 @@
       // Create a marker element
       var el = document.createElement("div");
       el.className = "marker";
+      // Add the marker to the map
+      // var busMarker = new mapboxgl.Marker(el)
+      //   .setLngLat([0, 0])
+      //   .setPopup(
+      //     new mapboxgl.Popup({ offset: 25 }).setHTML(
+      //       "<h3>Bus Details</h3>" +
+      //         "<p>Driver's Current Location</p>" +
+      //         `<p>From: </p>` +
+      //         `<p>To:</p>` +
+      //         `<p>Via: </p>` +
+      //         `<p>Time: </p>`
+      //     )
+      //   )
+      //   .addTo(map);
 
       // Initialize the line object
       var line;
@@ -142,9 +125,9 @@
       // Listen for the map 'load' event
       map.on("load", async function () {
         // stats
-        // stats = new Stats();
-        // map.getContainer().appendChild(stats.dom);
-        // animate();
+        stats = new Stats();
+        map.getContainer().appendChild(stats.dom);
+        animate();
         routePath = await getRoutePath(tripId);
         console.log("Route Path", routePath);
         // Initialize the source for the bus path
@@ -172,7 +155,7 @@
             var options = {
               obj: "/models/bus.glb",
               type: "gltf",
-              scale: 100,
+              scale: 40,
               units: "meters",
               anchor: "bottom",
               rotation: { x: 90, y: -90, z: 0 }, //rotation to postiion the truck and heading properly
@@ -199,7 +182,7 @@
             "line-cap": "round",
           },
           paint: {
-            "line-color": "#FF0000", // Completed path color
+            "line-color": "#007BFF", // Completed path color
             "line-width": 5, // Line width
           },
         });
@@ -219,6 +202,13 @@
             "line-opacity": 0.5, // Line width
           },
         });
+
+        // // Initialize the path between sourceLocation and destinationLocation
+        // const routePath = await getRoutePath(
+        //   data.sourceLocation,
+        //   data.destinationLocation
+        // );
+        // const busPath = map.getSource("busPath");
       });
 
       // Initialize an empty array to store coordinates
@@ -228,7 +218,14 @@
         // Check if the data is for the specific trip
         const stringWithoutSlash = queryString[1].replace("/", "");
         if (data.tripID === stringWithoutSlash) {
+          // console.log("Received data:", data);
+          // console.log("In it's space:", data.tripID, stringWithoutSlash);
+          // console.log("Got coords for Hardy", data);
+          // console.log("3d model", soldier);
           let via;
+          // if (data.viaLocation) {
+          //   via = await reverseGeocode(data.viaLocation);
+          // }
 
           // Update the marker's location
           if (!isNaN(data.longitude) && !isNaN(data.latitude) && soldier) {
@@ -236,16 +233,12 @@
             console.log("data from sockets ", data);
 
             soldier.setCoords([data.longitude, data.latitude]);
-            // Update map center to soldier's position
-            map.flyTo({
-              center: [data.longitude, data.latitude],
-              speed: 0.6,
-            });
-
             coordinatesArray.push([data.longitude, data.latitude]);
+
             if (coordinatesArray.length > 1) {
-              lineGeometry = coordinatesArray.map(function (coordinate) {
-                return coordinate.concat([coordinate.length - 1]);
+              line.setGeometry({
+                type: "LineString",
+                coordinates: coordinatesArray,
               });
             }
           } else {
@@ -256,17 +249,47 @@
           }
 
           // Check if sourceLocation and destinationLocation are available
-          if (data.sourceLocation && data.destinationLocation && lineGeometry) {
-            console.log("lineGeometry", lineGeometry);
-            // Add the line object to the map
-            line = tb.line({
-              geometry: lineGeometry,
-              width: 5,
-              color: "green",
-            });
-
-            tb.add(line);
+          if (data.sourceLocation && data.destinationLocation) {
+            // var options = {
+            //   path: routePath,
+            //   duration: 100000, // Adjust duration as needed
+            //   trackHeading: true, // Rotate the object to stay aligned with the direction of travel
+            // };
+            // soldier.followPath(options, function (m) {
+            //   console.log("woeking check", m);
+            //   tb.remove(line);
+            // });
+            // set up geometry for a line to be added to map, lofting it up a bit for *style*
+            //   var lineGeometry = options.path.map(function (coordinate) {
+            //     return coordinate.concat([15]);
+            //   });
+            //   // create and add line object
+            //   line = tb.line({
+            //     geometry: lineGeometry,
+            //     width: 3,
+            //     color: "green",
+            //   });
+            //   tb.add(line);
           }
+
+          // Update the popup content
+          // busMarker
+          //   .getPopup()
+          //   .setHTML(
+          //     "<h3>Bus Details</h3>" +
+          //       "<p>Driver's Current Location</p>" +
+          //       `<p>From: ${await reverseGeocode(data.sourceLocation)}</p>` +
+          //       `<p>To: ${await reverseGeocode(data.destinationLocation)}</p>` +
+          //       `<p>Via: ${via || "N/A"}</p>` +
+          //       `<p>Time: ${formatTime(data.currentTime)}</p>`
+          //   );
+
+          // Fly to the updated location with a smooth transition
+          // map.flyTo({
+          //   center: [data.longitude, data.latitude],
+          //   speed: 0.6,
+          // });
+          // }
         }
       });
 
@@ -296,6 +319,17 @@
           return [];
         }
       }
+      // Function to perform reverse geocoding
+      // async function reverseGeocode(location) {
+      //   const response = await fetch(
+      //     `https://api.mapbox.com/geocoding/v5/mapbox.places/${location[1]},${location[0]}.json?types=poi&access_token=${mapboxgl.accessToken}`
+      //   );
+
+      //   const data = await response.json();
+      //   console.log("reverseGeocode", data);
+      //   // Return the formatted location name
+      //   return data.features[0] ? data.features[0].place_name : "N/A";
+      // }
 
       // Function to format the time
       function formatTime(currentTime) {
