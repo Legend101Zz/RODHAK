@@ -10,6 +10,7 @@ const bcrypt = require("bcrypt");
 const turf = require("@turf/distance");
 const Owner = require("../models/owner.schema");
 const Vehicle = require("../models/vehicle.schema");
+const Attendance = require("../models/attendance.schema");
 
 //mail-setup
 // const nodemailer = require("nodemailer");
@@ -40,6 +41,124 @@ module.exports.renderRegister = (req, res) => {
   res.render("driver/register2");
 };
 
+// Attendance Functions
+
+async function createAttendanceRecord(driverId, tripId) {
+  try {
+    // Find the trip by the tripId
+    const trip = await Trip.findById(tripId);
+
+    // Calculate the total hours for the trip
+    const totalHours = calculateTripHours(trip.start_time, trip.end_time);
+    console.log("2", totalHours);
+    // Create a new Attendance record
+    const attendanceRecord = new Attendance({
+      driver: driverId,
+      date: new Date().toISOString().slice(0, 10),
+      trips: [tripId],
+    });
+
+    // Save the attendance record
+    await attendanceRecord.save();
+    console.log("Attendance record created successfully.");
+  } catch (error) {
+    console.error("Error creating attendance record:", error);
+  }
+}
+
+async function updateAttendanceOnTripEnd(tripId) {
+  try {
+    // Find the trip by the tripId
+    const trip = await Trip.findById(tripId);
+    // Calculate the total hours for the trip
+    const { hours, minutes, seconds } = calculateTripHours(
+      trip.start_time,
+      trip.end_time
+    );
+    const totalHours = hours + minutes / 60 + seconds / 3600;
+    // Find the attendance record for the driver on the date of the trip
+    const attendanceRecord = await Attendance.findOne({
+      driver: trip.Driver,
+      date: new Date().toISOString().slice(0, 10),
+    });
+
+    if (attendanceRecord) {
+      // Update the attendance record
+      attendanceRecord.trips.push(tripId);
+      attendanceRecord.totalHours += totalHours;
+      await attendanceRecord.save();
+      console.log("Attendance record updated successfully.");
+    } else {
+      // Create a new attendance record
+      await createAttendanceRecord(trip.Driver, tripId);
+    }
+  } catch (error) {
+    console.error("Error updating attendance record:", error);
+  }
+}
+function calculateTripHours(startTime, endTime) {
+  console.log("startTime, endTime", startTime, endTime);
+  const startDate = parseTimeString(convertTo24Hour(startTime));
+  const endDate = parseTimeString(convertTo24Hour(endTime));
+
+  // Check if the start time is ahead of the end time
+  if (startDate.getTime() > endDate.getTime()) {
+    // If the start time is ahead of the end time, adjust the start date to the previous day
+    startDate.setDate(startDate.getDate() - 1);
+  }
+
+  const durationInMilliseconds = endDate.getTime() - startDate.getTime();
+  const durationInHours = durationInMilliseconds / (1000 * 60 * 60);
+  const durationInMinutes =
+    (durationInMilliseconds % (1000 * 60 * 60)) / (1000 * 60);
+  const durationInSeconds = (durationInMilliseconds % (1000 * 60)) / 1000;
+
+  return {
+    hours: Math.floor(durationInHours),
+    minutes: Math.floor(durationInMinutes),
+    seconds: Math.floor(durationInSeconds),
+  };
+}
+
+function parseTimeString(timeString) {
+  const [hours, minutes, seconds] = timeString.split(":");
+
+  let date = new Date();
+  date.setHours(parseInt(hours, 10));
+  date.setMinutes(parseInt(minutes, 10));
+  date.setSeconds(parseInt(seconds, 10));
+  date.setMilliseconds(0);
+
+  // Adjust the date to Indian Standard Time (UTC+05:30)
+  date.setHours(date.getHours() + 5);
+  date.setMinutes(date.getMinutes() + 30);
+
+  // If the hour is less than 0, it means the time is before midnight
+  if (date.getHours() < 0) {
+    // Adjust the date to the next day
+    date.setDate(date.getDate() + 1);
+  }
+
+  return date;
+}
+
+function convertTo24Hour(timeString) {
+  const [time, ampm] = timeString.split(" ");
+  const [hours, minutes] = time.split(":");
+
+  let hour = parseInt(hours, 10);
+  if (ampm === "PM" && hour !== 12) {
+    hour += 12;
+  } else if (ampm === "AM" && hour === 12) {
+    hour = 0;
+  }
+
+  return `${padZero(hour)}:${minutes}:00`;
+}
+
+function padZero(num) {
+  return num.toString().padStart(2, "0");
+}
 //driver register api
 module.exports.DriverRegister = async (req, res, next) => {
   const obj = Object.assign({}, req.files);
@@ -359,9 +478,11 @@ module.exports.end = async (req, res, next) => {
 
   if (id) {
     // console.log(id);
-    await Trip.findByIdAndUpdate(id, { isFinished: true })
-      .then((result) => {
+    const endTime = new Date().toTimeString().split(" ")[0];
+    await Trip.findByIdAndUpdate(id, { isFinished: true, end_time: endTime })
+      .then(async (result) => {
         // console.log(result);
+        await updateAttendanceOnTripEnd(id);
         res.redirect("/api/v1/driver/main");
       })
       .catch((err) => {
@@ -379,9 +500,11 @@ module.exports.endTripApi = async (req, res, next) => {
 
   if (id) {
     // console.log(id);
-    await Trip.findByIdAndUpdate(id, { isFinished: true })
-      .then((result) => {
+    const endTime = new Date().toTimeString().split(" ")[0];
+    await Trip.findByIdAndUpdate(id, { isFinished: true, end_time: endTime })
+      .then(async (result) => {
         // console.log(result);
+        await updateAttendanceOnTripEnd(id);
         return res.status(200).json({
           type: "success",
           message: "trip ended",
@@ -633,6 +756,42 @@ module.exports.createTripApi = async (req, res, next) => {
 };
 
 // ====== DRIVER REGISTER API =========
+
+module.exports.getAttendance = async (req, res) => {
+  try {
+    const { driverId, date } = req.body;
+
+    let query = { driver: driverId };
+
+    if (date) {
+      query.date = new Date(date).toISOString().slice(0, 10);
+    }
+
+    const attendanceRecords = await Attendance.find(query).populate("trips");
+
+    const response = attendanceRecords.map((record) => ({
+      id: record._id,
+      driver: record.driver,
+      date: record.date,
+      totalHours: record.totalHours,
+      trips: record.trips.map((trip) => ({
+        isFinished: trip.isFinished,
+        isPublic: trip.isPublic,
+        Type: trip.Type,
+        Vehicle: trip.Vehicle,
+        Start: trip.Start,
+        End: trip.End,
+        start_time: trip.start_time,
+        end_time: trip.end_time,
+        viaRoute: trip.viaRoute ? trip.viaRoute : "Not valid",
+      })),
+    }));
+
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports.DriverRegisterAPI = async (req, res) => {
   try {

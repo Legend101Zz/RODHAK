@@ -35,6 +35,7 @@ router.route("/test").get((req, res) => {
 router.route("/login/api").post(drivers.loginVerifyApi);
 router.route("/getActiveTrips/:driverId").get(drivers.getActiveTrips);
 router.route("/endTrip/api").post(drivers.endTripApi);
+router.route("/attendance").post(drivers.getAttendance);
 router.route("/createTrip/api").post(drivers.createTripApi);
 router.route("/registerAPI").post(
   upload.fields([

@@ -18,6 +18,7 @@ const TripSchema = new Schema({
   Start: { type: String },
   End: { type: String },
   start_time: { type: String },
+  end_time: { type: String },
   coordinateStart: {
     type: [Number],
   },
