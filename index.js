@@ -82,65 +82,65 @@ mongoose
     io.on("connection", (socket) => {
       console.log("client connected ");
       // ========= CODE TO CHECK //////////
-      // let data;
-      // let data2;
-      // setInterval(() => {
-      //   const latitude = parseFloat(faker.address.latitude());
-      //   const longitude = parseFloat(faker.address.longitude());
+      let data;
+      let data2;
+      setInterval(() => {
+        const latitude = parseFloat(faker.address.latitude());
+        const longitude = parseFloat(faker.address.longitude());
 
-      //   data = {
-      //     tripID: "6601b4691a5329549b0bf065",
-      //     latitude: latitude,
-      //     longitude: longitude,
-      //     sourceLocation: "Mandi,HP",
-      //     destinationLocation: "Chandigarh",
-      //     viaLocation: "Via",
-      //     currentTime: new Date().toLocaleTimeString(),
-      //   };
-      //   console.log("veh 1 ", data.latitude, data.longitude);
-      //   if (
-      //     data &&
-      //     data.latitude >= -90 &&
-      //     data.latitude <= 90 &&
-      //     data.longitude >= -180 &&
-      //     data.longitude <= 180
-      //   )
-      //     socket.broadcast.emit("broadcastDriverData", data);
-      // }, 20000);
+        data = {
+          tripID: "6601b4691a5329549b0bf065",
+          latitude: latitude,
+          longitude: longitude,
+          sourceLocation: "Mandi,HP",
+          destinationLocation: "Chandigarh",
+          viaLocation: "Via",
+          currentTime: new Date().toLocaleTimeString(),
+        };
+        console.log("veh 1 ", data.latitude, data.longitude);
+        if (
+          data &&
+          data.latitude >= -90 &&
+          data.latitude <= 90 &&
+          data.longitude >= -180 &&
+          data.longitude <= 180
+        )
+          socket.broadcast.emit("broadcastDriverData", data);
+      }, 20000);
 
-      // setInterval(() => {
-      //   const latitude = parseFloat(faker.address.latitude());
-      //   const longitude = parseFloat(faker.address.longitude());
+      setInterval(() => {
+        const latitude = parseFloat(faker.address.latitude());
+        const longitude = parseFloat(faker.address.longitude());
 
-      //   data2 = {
-      //     tripID: "6526e2ad7c615a02e43a1067",
-      //     latitude: latitude,
-      //     longitude: longitude,
-      //     sourceLocation: "Kullu, H.P",
-      //     destinationLocation: "Shimla ,H.P",
-      //     viaLocation: "Via",
-      //     currentTime: new Date().toLocaleTimeString(),
-      //   };
-      //   console.log("veh 2 ", data2.latitude);
-      //   if (data) socket.broadcast.emit("broadcastDriverData", data2);
-      // }, 20000);
+        data2 = {
+          tripID: "6526e2ad7c615a02e43a1067",
+          latitude: latitude,
+          longitude: longitude,
+          sourceLocation: "Kullu, H.P",
+          destinationLocation: "Shimla ,H.P",
+          viaLocation: "Via",
+          currentTime: new Date().toLocaleTimeString(),
+        };
+        console.log("veh 2 ", data2.latitude);
+        if (data) socket.broadcast.emit("broadcastDriverData", data2);
+      }, 20000);
 
       // ========= CODE TO CHECK ENDS //////////
 
-      socket.on("driverData", async (data) => {
-        // Broadcast data to all connected users (excluding the sender)
-        console.log("inside driver event");
-        console.log(
-          "Driver_DATA",
-          data,
-          // data["longitude"],
-          // data[latitude],
-          JSON.parse(data)
-        );
-        setTimeout(() => {
-          socket.broadcast.emit("broadcastDriverData", JSON.parse(data));
-        }, 5000);
-      });
+      // socket.on("driverData", async (data) => {
+      //   // Broadcast data to all connected users (excluding the sender)
+      //   console.log("inside driver event");
+      //   console.log(
+      //     "Driver_DATA",
+      //     data,
+      //     // data["longitude"],
+      //     // data[latitude],
+      //     JSON.parse(data)
+      //   );
+      //   setTimeout(() => {
+      //     socket.broadcast.emit("broadcastDriverData", JSON.parse(data));
+      //   }, 5000);
+      // });
     });
   })
   .catch((err) => {
