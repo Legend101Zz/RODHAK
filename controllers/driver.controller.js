@@ -616,8 +616,8 @@ module.exports.createTripApi = async (req, res, next) => {
       const num = numLower.replace(/\W/g, "");
       const vehicle = await Vehicle.findOne({ vehicleNum: num });
 
-      const starting = req.body.sourceLocation;
-      const ending = req.body.destinationLocation;
+      const starting = JSON.parse(req.body.sourceLocation);
+      const ending = JSON.parse(req.body.destinationLocation);
       const viaRoute = req.body.viaRoute;
       const via = JSON.parse(req.body.via);
       const start_time = req.body.start_time;
