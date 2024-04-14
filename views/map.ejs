@@ -395,7 +395,7 @@
           const destinationLocation = tripData.coordinateEnd;
 
           const response2 = await fetch(
-            `https://api.mapbox.com/directions/v5/mapbox/driving/${sourceLocation[0]},${sourceLocation[1]};${destinationLocation[0]},${destinationLocation[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`
+            `https://api.mapbox.com/directions/v5/mapbox/driving/${sourceLocation[1]},${sourceLocation[0]};${destinationLocation[1]},${destinationLocation[0]}?geometries=geojson&access_token=${mapboxgl.accessToken}`
           );
           const data = await response2.json();
           // console.log("trip response 2", data);
