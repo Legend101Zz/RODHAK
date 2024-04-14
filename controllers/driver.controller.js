@@ -582,7 +582,7 @@ module.exports.getActiveTrips = async (req, res, next) => {
       isFinished: false,
     })
       .select(
-        "_id isFinished isPublic Type Vehicle coordinateStart coordinateEnd start_time via viaCoords"
+        "_id isFinished isPublic Type Vehicle coordinateStart coordinateEnd start_time via"
       )
       .lean();
 
@@ -637,7 +637,6 @@ module.exports.createTripApi = async (req, res, next) => {
             Start: start,
             End: end,
             via,
-            viaCoords,
             start_time: start_time,
           });
 
