@@ -388,15 +388,21 @@
       // Function to get the route path between sourceLocation and destinationLocation
       async function getRoutePath(tripId) {
         try {
-          const response = await fetch(`/himraahi/trip/Coords/${tripId}`);
+          const response = await fetch(
+            `${SOCKET_URL}himraahi/trip/Coords/${tripId}`
+          );
           const tripData = await response.json();
           // console.log("trip response", tripData);
           const sourceLocation = tripData.coordinateStart;
           const destinationLocation = tripData.coordinateEnd;
+          const via = tripData.via;
+
+          console.log(tripData);
 
           const response2 = await fetch(
-            `https://api.mapbox.com/directions/v5/mapbox/driving/${sourceLocation[1]},${sourceLocation[0]};${destinationLocation[1]},${destinationLocation[0]}?geometries=geojson&access_token=${mapboxgl.accessToken}`
+            `https://api.mapbox.com/directions/v5/mapbox/driving/${sourceLocation[1]},${sourceLocation[0]};${via[1]},${via[0]};${destinationLocation[1]},${destinationLocation[0]}?alternatives=true&geometries=geojson&access_token=${mapboxgl.accessToken}`
           );
+
           const data = await response2.json();
           // console.log("trip response 2", data);
           return data.routes[0].geometry.coordinates;
