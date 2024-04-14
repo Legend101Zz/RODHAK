@@ -133,7 +133,7 @@ module.exports.singleTrip = async (req, res, next) => {
       if (!trip.isFinished) {
         res.render("map", { env: process.env.MAP_BOX });
       } else {
-        res.status(401).send({ message: " Trip is Finished" });
+        res.render("tripFinish");
       }
     } else {
       res.status(401).send({ message: "Invalid Trip id" });
