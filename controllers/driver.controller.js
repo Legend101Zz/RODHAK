@@ -640,6 +640,7 @@ module.exports.createTripApi = async (req, res, next) => {
             Start: start,
             End: end,
             via: via,
+            viaRoute,
             start_time: start_time,
           });
 

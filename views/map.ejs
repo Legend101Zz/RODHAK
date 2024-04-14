@@ -220,10 +220,9 @@
           currentTime,
         } = routeInfo;
         console.log("route info", routeInfo);
-        document.getElementById("sourceLocation").textContent = sourceLocation;
-        document.getElementById("destinationLocation").textContent =
-          destinationLocation;
-        document.getElementById("viaLocation").textContent = viaLocation;
+        document.getElementById("sourceLocation").textContent = start;
+        document.getElementById("destinationLocation").textContent = end;
+        document.getElementById("viaLocation").textContent = viaRoute;
         document.getElementById("lastUpdatedTime").textContent = currentTime;
       }
 
@@ -333,6 +332,7 @@
 
       // Initialize an empty array to store coordinates
       let coordinatesArray = [];
+      let start, end, viaRoute;
       // Listen for WebSocket updates from the server
       socket.on("broadcastDriverData", async (data) => {
         // Check if the data is for the specific trip
@@ -396,6 +396,9 @@
           const sourceLocation = tripData.coordinateStart;
           const destinationLocation = tripData.coordinateEnd;
           const via = tripData.via;
+          start = tripData.Start;
+          end = tripData.End;
+          viaRoute = tripData.viaRoute;
 
           console.log(tripData);
 
