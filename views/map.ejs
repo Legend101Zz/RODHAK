@@ -192,8 +192,8 @@
       var soldier;
       var routePath;
       var lineGeometry;
-      let SOCKET_URL = "https://himraahi.in/";
-      // let SOCKET_URL = "http://localhost:3000/";
+      // let SOCKET_URL = "https://himraahi.in/";
+      let SOCKET_URL = "http://localhost:3000/";
       mapboxgl.accessToken = mapId;
 
       // Create a socket connection
@@ -406,10 +406,21 @@
         }
       }
 
-      // Function to format the time
       function formatTime(currentTime) {
         const date = new Date(currentTime);
-        return date.toLocaleString(); // Adjust this according to your preferred format
+
+        // Adjust the date to Indian Standard Time (UTC+05:30)
+        date.setHours(date.getHours() + 5);
+        date.setMinutes(date.getMinutes() + 30);
+
+        // Format the time in the desired format
+        return date.toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+          hour12: true,
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+        });
       }
     </script>
   </body>

@@ -106,7 +106,7 @@ mongoose
           data.longitude <= 180
         )
           socket.broadcast.emit("broadcastDriverData", data);
-      }, 10000);
+      }, 20000);
 
       setInterval(() => {
         const latitude = parseFloat(faker.address.latitude());
@@ -123,7 +123,7 @@ mongoose
         };
         console.log("veh 2 ", data2.latitude);
         if (data) socket.broadcast.emit("broadcastDriverData", data2);
-      }, 10000);
+      }, 20000);
 
       // ========= CODE TO CHECK ENDS //////////
 
