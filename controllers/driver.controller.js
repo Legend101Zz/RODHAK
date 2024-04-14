@@ -609,6 +609,7 @@ module.exports.createTripApi = async (req, res, next) => {
   try {
     const id = req.body.driverId;
     if (id) {
+      console.log("create Trip", req.body);
       const start = req.body.source;
       const end = req.body.destination;
       const veh = req.body.vehicle;
@@ -616,13 +617,13 @@ module.exports.createTripApi = async (req, res, next) => {
       const num = numLower.replace(/\W/g, "");
       const vehicle = await Vehicle.findOne({ vehicleNum: num });
 
-      const starting = JSON.parse(req.body.sourceLocation);
-      const ending = JSON.parse(req.body.destinationLocation);
+      const starting = req.body.starting;
+      const ending = req.body.ending;
       const viaRoute = req.body.viaRoute;
-      const via = JSON.parse(req.body.via);
+      const via = req.body.via;
       const start_time = req.body.start_time;
 
-      console.log("create Trip", req.body);
+      console.log("create Trip", req.body, typeof via);
 
       // console.log("req body check", req.body);
 
