@@ -622,6 +622,8 @@ module.exports.createTripApi = async (req, res, next) => {
       const via = req.body.via;
       const start_time = req.body.start_time;
 
+      console.log("create Trip", req.body);
+
       // console.log("req body check", req.body);
 
       if (vehicle) {
