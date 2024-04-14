@@ -638,7 +638,7 @@ module.exports.createTripApi = async (req, res, next) => {
             coordinateEnd: ending,
             Start: start,
             End: end,
-            via,
+            via: via,
             start_time: start_time,
           });
 
@@ -671,7 +671,7 @@ module.exports.createTripApi = async (req, res, next) => {
                   location2: end,
                   vehicle_num: veh,
                   viaRoute,
-                  via,
+                  via: via,
                   type: vehicle.Type,
                   TripId: result._id,
                   start_time: start_time,
@@ -696,7 +696,7 @@ module.exports.createTripApi = async (req, res, next) => {
             Start: start,
             End: end,
             viaRoute,
-            via,
+            via: via,
             start_time: start_time,
           });
 
@@ -729,7 +729,7 @@ module.exports.createTripApi = async (req, res, next) => {
                   type: vehicle.Type,
                   TripId: result._id,
                   viaRoute,
-                  via,
+                  via: via,
                   start_time: start_time,
                 },
               });
