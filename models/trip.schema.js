@@ -25,7 +25,7 @@ const TripSchema = new Schema({
   coordinateEnd: {
     type: [Number],
   },
-  viaCoords: {
+  via: {
     type: [Number],
   },
   viaRoute: {

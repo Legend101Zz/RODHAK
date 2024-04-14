@@ -582,7 +582,7 @@ module.exports.getActiveTrips = async (req, res, next) => {
       isFinished: false,
     })
       .select(
-        "_id isFinished isPublic Type Vehicle coordinateStart coordinateEnd start_time viaRoute"
+        "_id isFinished isPublic Type Vehicle coordinateStart coordinateEnd start_time via viaCoords"
       )
       .lean();
 
@@ -619,7 +619,7 @@ module.exports.createTripApi = async (req, res, next) => {
       const starting = req.body.sourceLocation;
       const ending = req.body.destinationLocation;
       const viaRoute = req.body.viaRoute;
-      const viaCoords = req.body.via;
+      const via = req.body.via;
       const start_time = req.body.start_time;
 
       // console.log("req body check", req.body);
@@ -636,7 +636,7 @@ module.exports.createTripApi = async (req, res, next) => {
             coordinateEnd: ending,
             Start: start,
             End: end,
-            viaRoute,
+            via,
             viaCoords,
             start_time: start_time,
           });
@@ -670,7 +670,7 @@ module.exports.createTripApi = async (req, res, next) => {
                   location2: end,
                   vehicle_num: veh,
                   viaRoute,
-                  viaCoords,
+                  via,
                   type: vehicle.Type,
                   TripId: result._id,
                   start_time: start_time,
@@ -695,7 +695,7 @@ module.exports.createTripApi = async (req, res, next) => {
             Start: start,
             End: end,
             viaRoute,
-            viaCoords,
+            via,
             start_time: start_time,
           });
 
@@ -728,7 +728,7 @@ module.exports.createTripApi = async (req, res, next) => {
                   type: vehicle.Type,
                   TripId: result._id,
                   viaRoute,
-                  viaCoords,
+                  via,
                   start_time: start_time,
                 },
               });
