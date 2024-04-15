@@ -285,7 +285,7 @@
             var options = {
               obj: "/models/bus.glb",
               type: "gltf",
-              scale: 0.2,
+              scale: 0.01,
               units: "scene",
               anchor: "bottom",
               rotation: { x: 90, y: -90, z: 0 },
@@ -305,7 +305,7 @@
 
         map.on("zoom", function () {
           currentZoom = map.getZoom();
-          scaleFactor = 3 / (currentZoom / 12);
+          scaleFactor = Math.pow(2, 12 - currentZoom);
           console.log(
             "scaleFactor",
             scaleFactor,
@@ -315,7 +315,8 @@
             soldier.setScale(map.transform.scale)
           );
           if (soldier) {
-            soldier.scale.set(scaleFactor, scaleFactor, scaleFactor);
+            if (scaleFactor > 0.15)
+              soldier.scale.set(scaleFactor, scaleFactor, scaleFactor);
             // tb.update();
             console.log(soldier.scale);
           }
