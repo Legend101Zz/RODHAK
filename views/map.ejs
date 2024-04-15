@@ -4,14 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <script
-      src="https://unpkg.com/threebox-plugin/dist/threebox.min.js"
-      type="text/javascript"
-    ></script>
-    <link
-      href="https://unpkg.com/threebox-plugin/dist/threebox.css"
-      rel="stylesheet"
-    />
+
     <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
     <link
       href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css"
@@ -28,6 +21,14 @@
       rel="stylesheet"
       href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css"
       type="text/css"
+    />
+    <script
+      src="https://unpkg.com/threebox-plugin/dist/threebox.min.js"
+      type="text/javascript"
+    ></script>
+    <link
+      href="https://unpkg.com/threebox-plugin/dist/threebox.css"
+      rel="stylesheet"
     />
     <title>Rodhak</title>
     <style>
@@ -193,6 +194,8 @@
       var routePath;
       var lineGeometry;
       let SOCKET_URL = "https://himraahi.in/";
+      let currentZoom = 12; // Initial zoom level
+      let scaleFactor = 10; // Initial scale factor
       // let SOCKET_URL = "http://localhost:3000/";
       mapboxgl.accessToken = mapId;
 
@@ -219,11 +222,12 @@
           viaLocation,
           currentTime,
         } = routeInfo;
+        const time = formatTime(currentTime);
         console.log("route info", routeInfo);
         document.getElementById("sourceLocation").textContent = start;
         document.getElementById("destinationLocation").textContent = end;
         document.getElementById("viaLocation").textContent = viaRoute;
-        document.getElementById("lastUpdatedTime").textContent = currentTime;
+        document.getElementById("lastUpdatedTime").textContent = time;
       }
 
       // Event handler for socket connection
@@ -281,21 +285,40 @@
             var options = {
               obj: "/models/bus.glb",
               type: "gltf",
-              scale: 100,
-              units: "meters",
+              scale: 0.2,
+              units: "scene",
               anchor: "bottom",
-              rotation: { x: 90, y: -90, z: 0 }, //rotation to postiion the truck and heading properly
+              rotation: { x: 90, y: -90, z: 0 },
             };
 
             tb.loadObj(options, function (model) {
               soldier = model.setCoords([0, 0]);
-              soldier.addEventListener("ObjectChanged", onObjectChanged, false);
+              // soldier.addEventListener("ObjectChanged", onObjectChanged, false);
+              // soldier.addEventListener('ObjectMouseOver', onObjectChanged, false);
               tb.add(soldier);
             });
           },
           render: function (gl, matrix) {
             tb.update();
           },
+        });
+
+        map.on("zoom", function () {
+          currentZoom = map.getZoom();
+          scaleFactor = 3 / (currentZoom / 12);
+          console.log(
+            "scaleFactor",
+            scaleFactor,
+            map.transform.scale,
+            soldier,
+            soldier.unitsPerMeter,
+            soldier.setScale(map.transform.scale)
+          );
+          if (soldier) {
+            soldier.scale.set(scaleFactor, scaleFactor, scaleFactor);
+            // tb.update();
+            console.log(soldier.scale);
+          }
         });
 
         // Add a layer to display the completed bus path
@@ -343,7 +366,6 @@
           // Update the marker's location
           if (!isNaN(data.longitude) && !isNaN(data.latitude) && soldier) {
             console.log("data from sockets ", data);
-
             soldier.setCoords([data.longitude, data.latitude]);
             // Update map center to soldier's position
             map.flyTo({
@@ -382,7 +404,7 @@
       function onObjectChanged(e) {
         let model = e.detail.object; //here's the object already modified
         let action = e.detail.action; //here's the action that changed the object
-        // console.log("model click action", action);
+        console.log("model click action", e, action);
       }
 
       // Function to get the route path between sourceLocation and destinationLocation
