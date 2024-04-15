@@ -105,9 +105,12 @@ module.exports.getTripCoordsData = async (req, res) => {
     }
 
     // Extract start and end coordinates
-    const { coordinateStart, coordinateEnd, via, Start } = trip;
+    const { coordinateStart, coordinateEnd, via, Start, End, viaRoute } = trip;
     console.log("testing coords", coordinateStart, coordinateEnd, via);
     res.json({
+      Start,
+      End,
+      viaRoute,
       coordinateStart,
       coordinateEnd,
       via,

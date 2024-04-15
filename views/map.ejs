@@ -68,10 +68,12 @@
 
       .legend-item .color-red {
         background-color: #ff0000;
+        margin-bottom: 1rem;
       }
 
       .legend-item .color-green {
         background-color: #00ff00;
+        margin-bottom: 1rem;
       }
 
       .legend-item .label {
@@ -131,6 +133,7 @@
           width: 15px;
           height: 15px;
           margin-right: 3px;
+          text-align: center;
         }
       }
 
@@ -151,7 +154,12 @@
           width: 12px;
           height: 12px;
           margin-right: 2px;
+          text-align: center;
         }
+      }
+
+      .textt {
+        min-width: 7em;
       }
     </style>
   </head>
@@ -159,12 +167,12 @@
     <div id="map"></div>
     <div id="legend">
       <div class="legend-item">
-        <span class="color-red"></span>
-        <span class="label">Distance to be traveled</span>
+        <span class="color-red radio"></span>
+        <span class="label textt">Distance to be traveled</span>
       </div>
       <div class="legend-item">
-        <span class="color-green"></span>
-        <span class="label">Distance traveled</span>
+        <span class="color-green radio"></span>
+        <span class="label textt">Distance traveled</span>
       </div>
     </div>
     <div id="infoModal" class="modal">
@@ -222,7 +230,9 @@
           viaLocation,
           currentTime,
         } = routeInfo;
+
         const time = formatTime(currentTime);
+        console.log("update time", currentTime, time);
         console.log("route info", routeInfo);
         document.getElementById("sourceLocation").textContent = start;
         document.getElementById("destinationLocation").textContent = end;
@@ -260,18 +270,6 @@
       map.on("load", async function () {
         routePath = await getRoutePath(tripId);
         console.log("Route Path", routePath);
-        // Initialize the source for the bus path
-        map.addSource("busPath", {
-          type: "geojson",
-          data: {
-            type: "Feature",
-            properties: {},
-            geometry: {
-              type: "LineString",
-              coordinates: routePath,
-            },
-          },
-        });
 
         map.addLayer({
           id: "custom_layer",
@@ -322,6 +320,19 @@
           }
         });
 
+        // Initialize the source for the bus path
+        map.addSource("busPath", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "LineString",
+              coordinates: routePath,
+            },
+          },
+        });
+
         // Add a layer to display the completed bus path
         map.addLayer({
           id: "completedPathLayer",
@@ -334,22 +345,6 @@
           paint: {
             "line-color": "#FF0000", // Completed path color
             "line-width": 5, // Line width
-          },
-        });
-
-        // Add a layer to display the remaining bus path
-        map.addLayer({
-          id: "remainingPathLayer",
-          type: "line",
-          source: "busPath",
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-          },
-          paint: {
-            "line-color": "#FF0000", // Remaining path color
-            "line-width": 5,
-            "line-opacity": 0.5, // Line width
           },
         });
       });
@@ -367,8 +362,21 @@
           // Update the marker's location
           if (!isNaN(data.longitude) && !isNaN(data.latitude) && soldier) {
             console.log("data from sockets ", data);
+
+            // Convert the coordinate array to a LngLat object
+            const currentPosition = mapboxgl.LngLat.convert([
+              data.longitude,
+              data.latitude,
+            ]);
+
             soldier.setCoords([data.longitude, data.latitude]);
-            // Update map center to soldier's position
+            // var options = {
+            //   path: coordinatesArray,
+            //   duration: 10000, // Adjust duration as needed
+            //   trackHeading: true, // Rotate the object to stay aligned with the direction of travel
+            // };
+            // soldier.followPath(options);
+            // // Update map center to soldier's position
             map.flyTo({
               center: [data.longitude, data.latitude],
               speed: 0.6,
@@ -423,7 +431,7 @@
           end = tripData.End;
           viaRoute = tripData.viaRoute;
 
-          console.log(tripData);
+          console.log("api trip data got", start, end, viaRoute, tripData);
 
           const response2 = await fetch(
             `https://api.mapbox.com/directions/v5/mapbox/driving/${sourceLocation[1]},${sourceLocation[0]};${via[1]},${via[0]};${destinationLocation[1]},${destinationLocation[0]}?alternatives=true&geometries=geojson&access_token=${mapboxgl.accessToken}`
@@ -439,20 +447,35 @@
       }
 
       function formatTime(currentTime) {
-        const date = new Date(currentTime);
+        // Create a regular expression to match various time formats
+        const timeRegex = /(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)?/;
 
-        // Adjust the date to Indian Standard Time (UTC+05:30)
-        date.setHours(date.getHours() + 5);
-        date.setMinutes(date.getMinutes() + 30);
+        // Match the input time against the regular expression
+        const match = currentTime.match(timeRegex);
 
-        // Format the time in the desired format
-        return date.toLocaleString("en-IN", {
-          timeZone: "Asia/Kolkata",
-          hour12: true,
-          hour: "numeric",
-          minute: "numeric",
-          second: "numeric",
-        });
+        if (match) {
+          // Extract hours, minutes, and seconds from the matched groups
+          let hours = parseInt(match[1], 10);
+          let minutes = parseInt(match[2], 10);
+          let seconds = parseInt(match[3], 10);
+          let period = match[4] || "AM"; // Default to AM if no period is specified
+
+          // Adjust hours for PM period
+          if (period === "PM" && hours < 12) {
+            hours += 12;
+          }
+
+          // Ensure leading zeros if necessary
+          hours = hours < 10 ? "0" + hours : hours;
+          minutes = minutes < 10 ? "0" + minutes : minutes;
+          seconds = seconds < 10 ? "0" + seconds : seconds;
+
+          // Format the time in the desired format
+          return `${hours}:${minutes}:${seconds}`;
+        } else {
+          // Return the input as is if it doesn't match the expected format
+          return currentTime;
+        }
       }
     </script>
   </body>
