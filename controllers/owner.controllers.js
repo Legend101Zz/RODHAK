@@ -1,4 +1,5 @@
 const Owner = require("../models/owner.schema");
+const Trip = require("../models/trip.schema");
 const bcrypt = require("bcrypt");
 
 // creating mail service
@@ -177,5 +178,45 @@ module.exports.getDriverDetails = async (req, res) => {
   } catch (error) {
     console.error("Error getting owner drivers:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+module.exports.getOwnerVehicles = async (req, res) => {
+  try {
+    const ownerId = req.params.ownerId;
+    const owner = await Owner.findById(ownerId).populate("Vehicle");
+
+    if (!owner) {
+      return res.status(404).json({ message: "Owner not found" });
+    }
+
+    // Prepare response object
+    const vehicles = [];
+
+    // Iterate over owner's vehicles
+    for (const vehicle of owner.Vehicle) {
+      // Check if the vehicle is in any trip
+      const trip = await Trip.findOne({
+        Vehicle: vehicle.vehicleNum,
+        isFinished: false,
+      });
+
+      // Determine vehicle status
+      const status = trip ? "active" : "not active";
+
+      // Add vehicle to response object
+      vehicles.push({
+        vehicleNum: vehicle.vehicleNum,
+        status: status,
+      });
+    }
+
+    res.status(200).json({
+      ownerId: owner._id,
+      vehicles: vehicles,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -19,6 +19,7 @@ router
 // apis
 
 router.route("/getDriverDetails/:ownerId").get(owners.getDriverDetails);
+router.route("/getVehicleDetails/:ownerId").get(owners.getOwnerVehicles);
 
 //route for testing email service:
 router.route("/test").get(owners.test);

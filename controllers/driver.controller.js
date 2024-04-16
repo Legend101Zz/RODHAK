@@ -616,12 +616,26 @@ module.exports.createTripApi = async (req, res, next) => {
       var numLower = req.body.vehicle.toLowerCase();
       const num = numLower.replace(/\W/g, "");
       const vehicle = await Vehicle.findOne({ vehicleNum: num });
-
-      const starting = JSON.parse(req.body.starting);
-      const ending = JSON.parse(req.body.ending);
+      const starting = req.body.starting;
+      const ending = req.body.ending;
       const viaRoute = req.body.viaRoute;
-      const via = JSON.parse(req.body.via);
+      const via = req.body.via;
       const start_time = req.body.start_time;
+
+      if (vehicle) {
+        // Check if the vehicle has any ongoing trip
+        const ongoingTrip = await Trip.findOne({
+          Vehicle: vehicle.vehicleNum,
+          isFinished: false,
+        });
+
+        if (ongoingTrip) {
+          return res.status(201).json({
+            type: "user error",
+            message: "Vehicle is currently on a trip and cannot be used.",
+          });
+        }
+      }
 
       console.log("create Trip", req.body, typeof via);
 
