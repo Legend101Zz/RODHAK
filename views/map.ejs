@@ -293,6 +293,12 @@
               soldier = model.setCoords([0, 0]);
               // soldier.addEventListener("ObjectChanged", onObjectChanged, false);
               // soldier.addEventListener('ObjectMouseOver', onObjectChanged, false);
+              model.addLabel(
+                ` <h3 style="font-size: 1rem; color: #f48915; text-transform: uppercase; letter-spacing: 0.1em; text-shadow: 1px 1px 0 #52e7c0, 2px 2px 0 #4cceac, 3px 3px 0 #52e7c0;">Him Bus</h3>`,
+                true,
+                model.anchor,
+                2
+              );
               tb.add(soldier);
             });
           },
