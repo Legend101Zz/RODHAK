@@ -12,6 +12,12 @@ router.route("/trip/:tripId").get(apis.singleTrip);
 router.route("/trip/Coords/:id").get(apis.getTripCoordsData);
 router.route("/owner/:id").get(apis.ownerData);
 
+const auth = require("../middleware/auth");
+// Password reset routes
+router.post("/request-reset", apis.requestPasswordReset);
+router.post("/reset-password", apis.resetPassword);
+router.post("/change-password", auth, apis.changePassword);
+
 //depreciated apis
 router.route("/directions/:id").post(apis.directions);
 

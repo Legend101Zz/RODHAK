@@ -5,6 +5,7 @@ const { storage } = require("../cloudinary/index");
 const upload = multer({ storage });
 const owners = require("../controllers/owner.controllers");
 
+// Registration routes
 router
   .route("/register")
   .get(owners.renderRegister)
@@ -13,13 +14,20 @@ router
       { name: "image", maxCount: 2 },
       { name: "legal", maxCount: 8 },
     ]),
-    owners.register
+    owners.register,
   );
+
+// Email verification
+router.get("/verify-email/:token", owners.verifyEmail);
+router.post("/resend-verification", owners.resendVerification);
 
 // apis
 
 router.route("/getDriverDetails/:ownerId").get(owners.getDriverDetails);
 router.route("/getVehicleDetails/:ownerId").get(owners.getOwnerVehicles);
+
+// Remove driver from owner's organization
+router.delete("/removeDriver/:ownerId/:driverId", owners.removeDriver);
 
 //route for testing email service:
 router.route("/test").get(owners.test);

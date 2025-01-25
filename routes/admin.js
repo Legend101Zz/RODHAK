@@ -35,6 +35,6 @@ router.route("/editOwner/:id").get(admin.ownerEdit).post(admin.ownerEditPost);
 //login
 router.route("/login").get(admin.login).post(admin.loginVerify);
 
-// router.route("/createAdmin").get(admin.createAdmin);
+router.route("/createAdmin").get(admin.createAdmin);
 
 module.exports = router;

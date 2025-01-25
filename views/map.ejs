@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-
     <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
     <link
       href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css"
@@ -14,26 +13,28 @@
     <link
       rel="stylesheet"
       href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.css"
-      type="text/css"
     />
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js"></script>
+    <script src="https://unpkg.com/threebox-plugin@2.2.7/dist/threebox.js"></script>
     <link
-      rel="stylesheet"
-      href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css"
-      type="text/css"
-    />
-    <script
-      src="https://unpkg.com/threebox-plugin/dist/threebox.min.js"
-      type="text/javascript"
-    ></script>
-    <link
-      href="https://unpkg.com/threebox-plugin/dist/threebox.css"
+      href="https://unpkg.com/threebox-plugin@2.2.7/dist/threebox.css"
       rel="stylesheet"
     />
-    <title>Rodhak</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.7/dayjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.7/plugin/utc.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.7/plugin/timezone.min.js"></script>
+    <title>HimRaahi - Live Bus Tracking</title>
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+
       body {
         margin: 0;
+        overflow: hidden;
       }
 
       #map {
@@ -42,447 +43,533 @@
         position: relative;
       }
 
-      #legend {
+      .control-panel {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: rgba(255, 255, 255, 0.3); /* Translucent background */
-        border: 1px solid rgba(0, 0, 0, 0.1); /* Border */
-        border-radius: 10px; /* Rounded corners */
-        padding: 10px;
-        font-family: Arial, sans-serif;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        padding: 20px;
+        width: 320px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
       }
 
-      .legend-item {
-        margin-bottom: 5px;
-        width: 200px;
+      .trip-info {
+        margin-bottom: 20px;
       }
 
-      .legend-item span {
-        display: inline-block;
+      .trip-info h2 {
+        color: #1a73e8;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+      }
+
+      .location-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 4px solid #1a73e8;
+      }
+
+      .location-card.current {
+        border-left-color: #34a853;
+        background: #e8f5e9;
+      }
+
+      .location-label {
+        font-size: 0.85rem;
+        color: #5f6368;
+        margin-bottom: 4px;
+      }
+
+      .location-name {
+        font-weight: 500;
+        color: #202124;
+      }
+
+      .progress-container {
+        margin: 15px 0;
+        background: #e0e0e0;
+        height: 4px;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: #1a73e8;
+        transition: width 0.3s ease;
+      }
+
+      .eta-panel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 15px;
+      }
+
+      .eta-info {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .eta-label {
+        font-size: 0.85rem;
+        color: #5f6368;
+      }
+
+      .eta-value {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #1a73e8;
+      }
+
+      .view-controls {
+        position: absolute;
+        bottom: 30px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 1000;
+      }
+
+      .control-button {
+        background: white;
+        border: none;
+        padding: 12px;
+        border-radius: 50%;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .control-button:hover {
+        background: #f8f9fa;
+        transform: translateY(-2px);
+      }
+
+      .control-button svg {
         width: 20px;
         height: 20px;
-        margin-right: 5px;
-        border-radius: 50%;
       }
 
-      .legend-item .color-red {
-        background-color: #ff0000;
-        margin-bottom: 1rem;
-      }
-
-      .legend-item .color-green {
-        background-color: #00ff00;
-        margin-bottom: 1rem;
-      }
-
-      .legend-item .label {
-        vertical-align: super;
-      }
-
-      .modal {
+      .milestone-notification {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: rgba(255, 255, 255, 0.3);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-        padding: 20px;
-        font-family: Arial, sans-serif;
-        backdrop-filter: blur(10px);
-        max-height: 300px;
-        overflow: hidden;
-        transition: max-height 0.3s ease, padding 0.3s ease;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(26, 115, 232, 0.95);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 2000;
+        display: none;
+        animation: slideDown 0.3s ease;
       }
 
-      .modal.minimized {
-        max-height: 40px;
-        padding: 10px;
+      @keyframes slideDown {
+        from {
+          transform: translate(-50%, -100%);
+          opacity: 0;
+        }
+        to {
+          transform: translate(-50%, 0);
+          opacity: 1;
+        }
       }
 
-      .modal-content {
-        text-align: center;
-        position: relative;
-      }
-
-      .minimize-button {
+      .mode-toggle {
         position: absolute;
-        top: -25px;
-        right: -5px;
+        top: 20px;
+        right: 20px;
+        background: white;
+        border-radius: 20px;
+        padding: 4px;
+        display: flex;
+        gap: 4px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .mode-button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 16px;
+        background: transparent;
         cursor: pointer;
-        font-size: 26px;
-        background-color: transparent;
-        border: 3px solid rgba(0, 0, 0, 0.8);
-        color: #333;
-        transition: color 0.3s ease; /* Smooth color transition */
+        font-size: 0.9rem;
+        color: #5f6368;
+        transition: all 0.2s ease;
       }
 
-      @media (max-width: 767px) {
-        #legend {
-          top: 5px;
-          right: 5px;
-          padding: 5px;
-        }
-
-        .legend-item {
-          margin-bottom: 3px;
-          width: 150px;
-        }
-
-        .legend-item span {
-          width: 15px;
-          height: 15px;
-          margin-right: 3px;
-          text-align: center;
-        }
+      .mode-button.active {
+        background: #1a73e8;
+        color: white;
       }
 
-      @media (max-width: 480px) {
-        #legend {
-          top: 5px;
-          right: 5px;
-          padding: 5px;
-          font-size: 12px;
+      @media (max-width: 768px) {
+        .control-panel {
+          width: calc(100% - 40px);
+          max-height: 50vh;
+          overflow-y: auto;
         }
-
-        .legend-item {
-          margin-bottom: 2px;
-          width: 120px;
-        }
-
-        .legend-item span {
-          width: 12px;
-          height: 12px;
-          margin-right: 2px;
-          text-align: center;
-        }
-      }
-
-      .textt {
-        min-width: 7em;
       }
     </style>
   </head>
   <body>
     <div id="map"></div>
-    <div id="legend">
-      <div class="legend-item">
-        <span class="color-red radio"></span>
-        <span class="label textt">Distance to be traveled</span>
-      </div>
-      <div class="legend-item">
-        <span class="color-green radio"></span>
-        <span class="label textt">Distance traveled</span>
+
+    <div class="control-panel">
+      <div class="trip-info">
+        <h2>Trip Progress</h2>
+        <div class="location-card">
+          <div class="location-label">FROM</div>
+          <div class="location-name" id="sourceLocation">Loading...</div>
+        </div>
+        <div class="location-card">
+          <div class="location-label">VIA</div>
+          <div class="location-name" id="viaLocation">Loading...</div>
+        </div>
+        <div class="location-card">
+          <div class="location-label">TO</div>
+          <div class="location-name" id="destinationLocation">Loading...</div>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-bar" id="tripProgress"></div>
+        </div>
+
+        <div class="eta-panel">
+          <div class="eta-info">
+            <span class="eta-label">ESTIMATED ARRIVAL</span>
+            <span class="eta-value" id="etaTime">--:--</span>
+          </div>
+          <div class="eta-info">
+            <span class="eta-label">LAST UPDATED</span>
+            <span class="eta-value" id="lastUpdatedTime">--:--</span>
+          </div>
+        </div>
       </div>
     </div>
-    <div id="infoModal" class="modal">
-      <div class="modal-content">
-        <h2>Route Information</h2>
-        <p>
-          <strong>Source Location:</strong> <span id="sourceLocation"></span>
-        </p>
-        <p>
-          <strong>Destination Location:</strong>
-          <span id="destinationLocation"></span>
-        </p>
-        <p><strong>Via Location:</strong> <span id="viaLocation"></span></p>
-        <p>
-          <strong>Last Updated Time:</strong> <span id="lastUpdatedTime"></span>
-        </p>
-      </div>
+
+    <div class="mode-toggle">
+      <button class="mode-button active" data-mode="default">Default</button>
+      <button class="mode-button" data-mode="satellite">Satellite</button>
+      <button class="mode-button" data-mode="terrain">Terrain</button>
     </div>
+
+    <div class="view-controls">
+      <button class="control-button" id="zoomIn" title="Zoom In">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+      <button class="control-button" id="zoomOut" title="Zoom Out">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+      <button class="control-button" id="followBus" title="Follow Bus">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+          ></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="milestone-notification" id="milestoneNotification"></div>
+
     <script src="/socket.io/socket.io.js"></script>
-    <script src="https://unpkg.com/leaflet-ease/leaflet-ease.js"></script>
     <script type="module">
-      // Your Mapbox access token
-      var mapId = "<%=env%>";
-      let data;
-      var destination, line;
-      var soldier;
-      var routePath;
-      var lineGeometry;
-      let SOCKET_URL = "https://himraahi.in/";
-      let currentZoom = 12; // Initial zoom level
-      let scaleFactor = 10; // Initial scale factor
-      // let SOCKET_URL = "http://localhost:3000/";
-      mapboxgl.accessToken = mapId;
+      // Initialize variables in global scope
+      const SOCKET_URL = "http://localhost:3000/";
+      const socket = io(SOCKET_URL);
+      const tripId = window.location.pathname.split("p")[1].replace("/", "");
 
-      // Create a socket connection
-      const socket = io(`${SOCKET_URL}`);
+      let map;
+      let threebox;
+      let busModel;
+      let routePath;
+      let updated_data = false;
+      let isFollowingBus = true;
+      let coordinatesArray = [];
+      let modelLoaded = false;
 
-      // Add the minimize button to the modal
-      const modal = document.querySelector("#infoModal");
-      const minimizeButton = document.createElement("button");
-      minimizeButton.classList.add("minimize-button");
-      minimizeButton.textContent = "-";
-      minimizeButton.addEventListener("click", () => {
-        modal.classList.toggle("minimized");
-      });
+      // Map styles configuration
+      const mapStyles = {
+        streets: "mapbox://styles/mapbox/streets-v11",
+        satellite: "mapbox://styles/mapbox/satellite-streets-v11",
+        terrain: "mapbox://styles/mapbox/outdoors-v11",
+      };
 
-      const modalContent = document.querySelector(".modal-content");
-      modalContent.appendChild(minimizeButton);
+      // Initialize timezone handling
+      dayjs.extend(window.dayjs_plugin_utc);
+      dayjs.extend(window.dayjs_plugin_timezone);
+      dayjs.tz.setDefault("Asia/Kolkata");
 
-      // Update the modal content with the route information
-      function updateModalContent(routeInfo) {
-        const {
-          sourceLocation,
-          destinationLocation,
-          viaLocation,
-          currentTime,
-        } = routeInfo;
+      // Initialize the map
+      async function initializeMap() {
+        mapboxgl.accessToken = "<%=env%>";
 
-        const time = formatTime(currentTime);
-        console.log("update time", currentTime, time);
-        console.log("route info", routeInfo);
-        document.getElementById("sourceLocation").textContent = start;
-        document.getElementById("destinationLocation").textContent = end;
-        document.getElementById("viaLocation").textContent = viaRoute;
-        document.getElementById("lastUpdatedTime").textContent = time;
+        map = new mapboxgl.Map({
+          container: "map",
+          style: mapStyles.streets,
+          center: [0, 0],
+          zoom: 14,
+          pitch: 45,
+          bearing: 0,
+        });
+
+        // Wait for initial map load
+        await new Promise((resolve) => map.on("load", resolve));
+
+        // Get initial route data
+        routePath = await getRoutePath(tripId);
+
+        // Initialize map features
+        await setupMapLayers();
+        await setupBusModel();
+        setupEventListeners();
       }
 
-      // Event handler for socket connection
-      socket.on("connect", () => {
-        console.log("Connected to the socket server");
-      });
+      // Set up initial map layers
+      async function setupMapLayers() {
+        if (!map.getSource("route")) {
+          map.addSource("route", {
+            type: "geojson",
+            data: {
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "LineString",
+                coordinates: routePath || [],
+              },
+            },
+          });
 
-      // Extract the trip ID from the URL
-      const queryString = window.location.pathname.split("p");
-      const tripId = queryString[1].replace("/", "");
+          map.addLayer({
+            id: "route-line",
+            type: "line",
+            source: "route",
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+            },
+            paint: {
+              "line-color": "#1a73e8",
+              "line-width": 4,
+              "line-opacity": 0.8,
+            },
+          });
+        }
+      }
 
-      // Initialize the map with a placeholder location
-      var map = new mapboxgl.Map({
-        container: "map",
-        style: "mapbox://styles/mapbox/streets-v9",
-        center: [0, 0], // Placeholder center
-        zoom: 12,
-        pitch: 60,
-        bearing: 0,
-      });
-
-      // Create a marker element
-      var el = document.createElement("div");
-      el.className = "marker";
-
-      // Initialize the line object
-      var line;
-
-      // Listen for the map 'load' event
-      map.on("load", async function () {
-        routePath = await getRoutePath(tripId);
-        console.log("Route Path", routePath);
-
+      // Set up 3D bus model
+      async function setupBusModel() {
+        // Add new custom layer for 3D model
         map.addLayer({
-          id: "custom_layer",
+          id: "3d-model",
           type: "custom",
           renderingMode: "3d",
-          onAdd: function (map, mbxContext) {
-            window.tb = new Threebox(map, mbxContext, {
+          onAdd: function (map, gl) {
+            window.tb = new Threebox(map, gl, {
               defaultLights: true,
+              enableTooltips: true,
             });
 
-            var options = {
-              obj: "/models/bus.glb",
-              type: "gltf",
-              scale: 0.01,
-              units: "scene",
-              anchor: "bottom",
-              rotation: { x: 90, y: -90, z: 0 },
-            };
-
-            tb.loadObj(options, function (model) {
-              soldier = model.setCoords([0, 0]);
-              // soldier.addEventListener("ObjectChanged", onObjectChanged, false);
-              // soldier.addEventListener('ObjectMouseOver', onObjectChanged, false);
-              model.addLabel(
-                ` <h3 style="font-size: 1rem; color: #f48915; text-transform: uppercase; letter-spacing: 0.1em; text-shadow: 1px 1px 0 #52e7c0, 2px 2px 0 #4cceac, 3px 3px 0 #52e7c0;">Him Bus</h3>`,
-                true,
-                model.anchor,
-                2
-              );
-              tb.add(soldier);
-            });
+            tb.loadObj(
+              {
+                obj: "/models/bus.glb",
+                type: "gltf",
+                scale: 1,
+                anchor: "bottom",
+                units: "scene",
+                rotation: { x: 90, y: -90, z: 0 },
+              },
+              function (model) {
+                busModel = model;
+                busModel.setCoords([0, 0]);
+                tb.add(busModel);
+              }
+            );
           },
           render: function (gl, matrix) {
-            tb.update();
-          },
-        });
-
-        map.on("zoom", function () {
-          currentZoom = map.getZoom();
-          scaleFactor = Math.pow(2, 12 - currentZoom);
-          console.log(
-            "scaleFactor",
-            scaleFactor,
-            map.transform.scale,
-            soldier,
-            soldier.unitsPerMeter,
-            soldier.setScale(map.transform.scale)
-          );
-          if (soldier) {
-            if (scaleFactor > 0.15)
-              soldier.scale.set(scaleFactor, scaleFactor, scaleFactor);
-            // tb.update();
-            console.log(soldier.scale);
-          }
-        });
-
-        // Initialize the source for the bus path
-        map.addSource("busPath", {
-          type: "geojson",
-          data: {
-            type: "Feature",
-            properties: {},
-            geometry: {
-              type: "LineString",
-              coordinates: routePath,
-            },
-          },
-        });
-
-        // Add a layer to display the completed bus path
-        map.addLayer({
-          id: "completedPathLayer",
-          type: "line",
-          source: "busPath",
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-          },
-          paint: {
-            "line-color": "#FF0000", // Completed path color
-            "line-width": 5, // Line width
-          },
-        });
-      });
-
-      // Initialize an empty array to store coordinates
-      let coordinatesArray = [];
-      let start, end, viaRoute;
-      // Listen for WebSocket updates from the server
-      socket.on("broadcastDriverData", async (data) => {
-        // Check if the data is for the specific trip
-        const stringWithoutSlash = queryString[1].replace("/", "");
-        if (data.tripID === stringWithoutSlash) {
-          let via;
-          updateModalContent(data);
-          // Update the marker's location
-          if (!isNaN(data.longitude) && !isNaN(data.latitude) && soldier) {
-            console.log("data from sockets ", data);
-
-            // Convert the coordinate array to a LngLat object
-            const currentPosition = mapboxgl.LngLat.convert([
-              data.longitude,
-              data.latitude,
-            ]);
-
-            soldier.setCoords([data.longitude, data.latitude]);
-            // var options = {
-            //   path: coordinatesArray,
-            //   duration: 10000, // Adjust duration as needed
-            //   trackHeading: true, // Rotate the object to stay aligned with the direction of travel
-            // };
-            // soldier.followPath(options);
-            // // Update map center to soldier's position
-            map.flyTo({
-              center: [data.longitude, data.latitude],
-              speed: 0.6,
-            });
-
-            coordinatesArray.push([data.longitude, data.latitude]);
-            if (coordinatesArray.length > 1) {
-              lineGeometry = coordinatesArray.map(function (coordinate) {
-                return coordinate.concat([coordinate.length - 1]);
-              });
+            if (tb) {
+              tb.update();
             }
-          } else {
-            console.error(
-              "Invalid latitude or longitude in the received data:",
-              data
-            );
-          }
+          },
+        });
+      }
 
-          // Check if sourceLocation and destinationLocation are available
-          if (data.sourceLocation && data.destinationLocation && lineGeometry) {
-            console.log("lineGeometry", lineGeometry);
-            // Add the line object to the map
-            line = tb.line({
-              geometry: lineGeometry,
-              width: 5,
-              color: "green",
+      // Set up event listeners for controls
+      function setupEventListeners() {
+        // Zoom controls
+        document.getElementById("zoomIn").addEventListener("click", () => {
+          map.zoomIn();
+        });
+
+        document.getElementById("zoomOut").addEventListener("click", () => {
+          map.zoomOut();
+        });
+
+        // Follow bus toggle
+        document.getElementById("followBus").addEventListener("click", () => {
+          isFollowingBus = !isFollowingBus;
+          document.getElementById("followBus").classList.toggle("active");
+        });
+
+        // Map style switching
+        document.querySelectorAll(".mode-button").forEach((button) => {
+          button.addEventListener("click", async () => {
+            const mode = button.dataset.mode;
+
+            // Update button states
+            document.querySelectorAll(".mode-button").forEach((btn) => {
+              btn.classList.remove("active");
             });
+            button.classList.add("active");
 
-            tb.add(line);
-          }
+            // Change map style
+            map.setStyle(mapStyles[mode]);
+
+            // Wait for style to load
+            await new Promise((resolve) => map.once("style.load", resolve));
+
+            // Reinitialize layers and 3D model
+            await setupMapLayers();
+            await setupBusModel();
+          });
+        });
+      }
+
+      // Socket event handling
+      socket.on("broadcastDriverData", async (data) => {
+        if (data.tripID === tripId) {
+          updateTripInfo(data);
+          updateBusLocation(data);
         }
       });
 
-      function onObjectChanged(e) {
-        let model = e.detail.object; //here's the object already modified
-        let action = e.detail.action; //here's the action that changed the object
-        console.log("model click action", e, action);
+      function updateTripInfo(data) {
+        if (!updated_data) {
+          // Update location information
+          if (data.sourceLocation) {
+            document.getElementById("sourceLocation").textContent =
+              data.sourceLocation;
+          }
+          if (data.destinationLocation) {
+            document.getElementById("destinationLocation").textContent =
+              data.destinationLocation;
+          }
+          if (data.viaLocation) {
+            document.getElementById("viaLocation").textContent =
+              data.viaLocation;
+          }
+        }
+
+        // Update time
+        if (data.currentTime) {
+          const currentDate = dayjs().format("YYYY-MM-DD"); // Get the current date in the required format
+          const dateTimeString = `${currentDate} ${data.currentTime}`; // Combine date and time
+
+          const time = dayjs(dateTimeString)
+            .tz("Asia/Kolkata")
+            .format("hh:mm A");
+          document.getElementById("lastUpdatedTime").textContent = time;
+        }
+
+        // Update progress bar if available
+        if (data) {
+          document.getElementById(
+            "tripProgress"
+          ).style.width = `${Math.random()}%`;
+        }
       }
 
-      // Function to get the route path between sourceLocation and destinationLocation
+      function updateBusLocation(data) {
+        if (!isNaN(data.longitude) && !isNaN(data.latitude) && busModel) {
+          const newPosition = [data.longitude, data.latitude];
+
+          // Update bus position
+          busModel.setCoords(newPosition);
+
+          // Update camera if following bus
+          if (isFollowingBus) {
+            map.flyTo({
+              center: newPosition,
+              speed: 0.5,
+              curve: 1,
+            });
+          }
+
+          // Update completed route
+          coordinatesArray.push(newPosition);
+          if (map.getSource("route")) {
+            map.getSource("route").setData({
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "LineString",
+                coordinates: coordinatesArray,
+              },
+            });
+          }
+        }
+      }
+
+      // Helper function to get route path
       async function getRoutePath(tripId) {
         try {
           const response = await fetch(
             `${SOCKET_URL}himraahi/trip/Coords/${tripId}`
           );
           const tripData = await response.json();
-          // console.log("trip response", tripData);
+
           const sourceLocation = tripData.coordinateStart;
           const destinationLocation = tripData.coordinateEnd;
           const via = tripData.via;
-          start = tripData.Start;
-          end = tripData.End;
-          viaRoute = tripData.viaRoute;
 
-          console.log("api trip data got", start, end, viaRoute, tripData);
-
-          const response2 = await fetch(
+          const directionsResponse = await fetch(
             `https://api.mapbox.com/directions/v5/mapbox/driving/${sourceLocation[1]},${sourceLocation[0]};${via[1]},${via[0]};${destinationLocation[1]},${destinationLocation[0]}?alternatives=true&geometries=geojson&access_token=${mapboxgl.accessToken}`
           );
 
-          const data = await response2.json();
-          // console.log("trip response 2", data);
-          return data.routes[0].geometry.coordinates;
+          const directionsData = await directionsResponse.json();
+          return directionsData.routes[0].geometry.coordinates;
         } catch (error) {
           console.error("Error fetching route path:", error);
           return [];
         }
       }
 
-      function formatTime(currentTime) {
-        // Create a regular expression to match various time formats
-        const timeRegex = /(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)?/;
-
-        // Match the input time against the regular expression
-        const match = currentTime.match(timeRegex);
-
-        if (match) {
-          // Extract hours, minutes, and seconds from the matched groups
-          let hours = parseInt(match[1], 10);
-          let minutes = parseInt(match[2], 10);
-          let seconds = parseInt(match[3], 10);
-          let period = match[4] || "AM"; // Default to AM if no period is specified
-
-          // Adjust hours for PM period
-          if (period === "PM" && hours < 12) {
-            hours += 12;
-          }
-
-          // Ensure leading zeros if necessary
-          hours = hours < 10 ? "0" + hours : hours;
-          minutes = minutes < 10 ? "0" + minutes : minutes;
-          seconds = seconds < 10 ? "0" + seconds : seconds;
-
-          // Format the time in the desired format
-          return `${hours}:${minutes}:${seconds}`;
-        } else {
-          // Return the input as is if it doesn't match the expected format
-          return currentTime;
-        }
-      }
+      // Initialize the application
+      initializeMap().catch(console.error);
     </script>
   </body>
 </html>

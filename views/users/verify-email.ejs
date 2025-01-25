@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Your Email - RODHAK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #c6426e, #642b73);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .logo {
+            width: 120px;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            color: #642b73;
+            margin-bottom: 1rem;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .email {
+            font-weight: bold;
+            color: #c6426e;
+        }
+        .resend-button {
+            display: inline-block;
+            background: #c6426e;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 1rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .resend-button:hover {
+            background: #642b73;
+        }
+        .message {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/rodhak.jpeg" alt="RODHAK Logo" class="logo">
+        <h1>Check Your Email</h1>
+        <p>We've sent a verification link to <span class="email"><%= email %></span></p>
+        <p>Please check your inbox and click the link to verify your email address.</p>
+        <p>If you don't see the email, check your spam folder.</p>
+
+        <button onclick="resendVerification()" class="resend-button" id="resend-button">
+            Resend Verification Email
+        </button>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        let timeoutId;
+
+        async function resendVerification() {
+            const button = document.getElementById('resend-button');
+            const message = document.getElementById('message');
+
+            button.disabled = true;
+            button.textContent = 'Sending...';
+
+            try {
+                const response = await fetch('/api/v1/owner/resend-verification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: '<%= email %>' })
+                });
+
+                const data = await response.json();
+
+                message.style.display = 'block';
+                if (response.ok) {
+                    message.textContent = 'Verification email resent successfully!';
+                    message.className = 'message success';
+                } else {
+                    message.textContent = data.message || 'Error resending verification email';
+                    message.className = 'message error';
+                }
+            } catch (error) {
+                message.style.display = 'block';
+                message.textContent = 'Error resending verification email';
+                message.className = 'message error';
+            }
+
+            button.textContent = 'Resend Verification Email';
+            button.disabled = false;
+
+            // Clear previous timeout if it exists
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+
+            // Hide message after 5 seconds
+            timeoutId = setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

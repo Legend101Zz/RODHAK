@@ -27,6 +27,9 @@ const OwnerSchema = new Schema(
     images: [ImageSchema],
     legal: [ImageSchema],
     isVerified: { type: String, default: "false" },
+    emailVerified: { type: Boolean, default: false },
+    emailVerificationToken: String,
+    emailVerificationTokenExpires: Date,
     Driver: [
       {
         type: Schema.Types.ObjectId,
@@ -42,7 +45,7 @@ const OwnerSchema = new Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 OwnerSchema.plugin(require("mongoose-autopopulate"));

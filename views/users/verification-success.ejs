@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Verified - RODHAK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #c6426e, #642b73);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .logo {
+            width: 120px;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            color: #642b73;
+            margin-bottom: 1rem;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin: 1rem 0;
+        }
+        .login-button {
+            display: inline-block;
+            background: #c6426e;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .login-button:hover {
+            background: #642b73;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/rodhak.jpeg" alt="RODHAK Logo" class="logo">
+        <div class="success-icon">✓</div>
+        <h1>Email Verified Successfully!</h1>
+        <p>Thanks a bunch for filling that out. It means a lot to us, just like you
+        do! We really appreciate your patience, please come-back in a day while
+        we get your details verified .</p>
+        <a href="/api/v1/owner/login" class="login-button">Go to Login</a>
+    </div>
+</body>
+</html>

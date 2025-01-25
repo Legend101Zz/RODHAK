@@ -3,6 +3,7 @@ const Driver = require("../models/driver.schema");
 const Admin = require("../models/admin.schema");
 const bcrypt = require("bcrypt");
 const Vehicle = require("../models/vehicle.schema");
+const { sendVerificationEmail } = require("../services/verificationEmail");
 
 //Main Dashboard
 module.exports.main = async (req, res, next) => {
@@ -37,15 +38,26 @@ module.exports.ownerVerifyRender = async (req, res, next) => {
 };
 
 //verify owner
-
 module.exports.ownerVerify = async (req, res, next) => {
   const admin = req.session.adminId;
   const id = req.params.ownerId;
-  console.log("check", id);
+
   if (admin) {
-    const owner = await Owner.findByIdAndUpdate(id, { isVerified: "true" });
-    console.log("verify", owner);
-    res.redirect("/api/v1/admin/main");
+    try {
+      const owner = await Owner.findByIdAndUpdate(
+        id,
+        { isVerified: "true" },
+        { new: true },
+      );
+
+      // Send verification email
+      await sendVerificationEmail("owner", owner);
+
+      res.redirect("/api/v1/admin/main");
+    } catch (error) {
+      console.error("Owner verification error:", error);
+      res.status(500).send("Error verifying owner");
+    }
   } else {
     res.redirect("/api/v1/admin/login");
   }
@@ -66,26 +78,26 @@ module.exports.driverVerifyRender = async (req, res, next) => {
 };
 
 //verify driver
-
 module.exports.driverVerify = async (req, res, next) => {
   const admin = req.session.adminId;
   const id = req.params.driverId;
-  console.log("check", id);
+
   if (admin) {
-    await Driver.findOneAndUpdate(
-      { _id: id },
-      { isVerified: "true" },
-      {
-        new: true,
-      }
-    )
-      .then((result) => {
-        console.log("verify", result);
-        res.redirect("/api/v1/admin/main");
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    try {
+      const driver = await Driver.findOneAndUpdate(
+        { _id: id },
+        { isVerified: "true" },
+        { new: true },
+      );
+
+      // Send verification email
+      await sendVerificationEmail("driver", driver);
+
+      res.redirect("/api/v1/admin/main");
+    } catch (error) {
+      console.error("Driver verification error:", error);
+      res.status(500).send("Error verifying driver");
+    }
   } else {
     res.redirect("/api/v1/admin/login");
   }
@@ -142,15 +154,32 @@ module.exports.vehicleVerifyRender = async (req, res, next) => {
 };
 
 //verify logic
-
 module.exports.vehicleVerify = async (req, res, next) => {
   const admin = req.session.adminId;
   const id = req.params.vehicleId;
-  console.log("check", id);
+
   if (admin) {
-    const vehicle = await Vehicle.findByIdAndUpdate(id, { isVerified: "true" });
-    console.log("verify", vehicle);
-    res.redirect("/api/v1/admin/main");
+    try {
+      const vehicle = await Vehicle.findByIdAndUpdate(
+        id,
+        { isVerified: "true" },
+        { new: true },
+      ).populate("Owner");
+
+      // For vehicles, we send the email to the owner
+      const emailData = {
+        ...vehicle.toObject(),
+        email: vehicle.Owner.email, // Add owner's email to the vehicle data
+      };
+
+      // Send verification email
+      await sendVerificationEmail("vehicle", emailData);
+
+      res.redirect("/api/v1/admin/main");
+    } catch (error) {
+      console.error("Vehicle verification error:", error);
+      res.status(500).send("Error verifying vehicle");
+    }
   } else {
     res.redirect("/api/v1/admin/login");
   }
@@ -202,7 +231,7 @@ module.exports.loginVerify = async (req, res, next) => {
   const password = req.body.password;
   const email = req.body.mail;
   const admin = await Admin.findOne({ email: email });
-  console.log(req.body, admin.password);
+
   if (admin) {
     const validPassword = await bcrypt.compare(password, admin.password);
     console.log(validPassword);
