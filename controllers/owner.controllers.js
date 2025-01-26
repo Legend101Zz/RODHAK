@@ -1,4 +1,5 @@
 const Owner = require("../models/owner.schema");
+const Driver = require("../models/driver.schema");
 const Trip = require("../models/trip.schema");
 const bcrypt = require("bcrypt");
 const {

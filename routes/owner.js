@@ -4,6 +4,7 @@ const multer = require("multer");
 const { storage } = require("../cloudinary/index");
 const upload = multer({ storage });
 const owners = require("../controllers/owner.controllers");
+const auth = require("../middleware/auth");
 
 // Registration routes
 router
@@ -22,6 +23,7 @@ router.get("/verify-email/:token", owners.verifyEmail);
 router.post("/resend-verification", owners.resendVerification);
 
 // apis
+router.use(auth); // Apply auth middleware to all routes below this line
 
 router.route("/getDriverDetails/:ownerId").get(owners.getDriverDetails);
 router.route("/getVehicleDetails/:ownerId").get(owners.getOwnerVehicles);

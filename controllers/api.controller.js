@@ -27,29 +27,79 @@ module.exports.api = async (req, res, next) => {
   );
 };
 //owner login
-
-module.exports.owner = async (req, res, next) => {
+module.exports.owner = async (req, res) => {
   try {
-    // console.log(req.body);
-    const owner = await Owner.findOne(
-      { email: req.body.email },
-      { Driver: 0, Vehicle: 0 },
-    );
-    // console.log(owner);
-    if (!owner)
-      return res.status(401).send({ message: "Invalid Email or Password" });
-    const validPassword = await bcrypt.compare(
-      req.body.password,
-      owner.password,
-    );
-    if (!validPassword)
-      return res.status(401).send({ message: "Invalid Password or Email" });
+    // Validate request body
+    const { email, password } = req.body;
+    console.log("data", req.body);
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide both email and password",
+      });
+    }
 
+    // Find owner excluding sensitive data
+    const owner = await Owner.findOne(
+      { email },
+      { password: 1, email: 1, username: 1, business: 1, isVerified: 1 },
+    );
+
+    // Check if owner exists
+    if (!owner) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Verify password
+    const validPassword = await bcrypt.compare(password, owner.password);
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Check if owner is verified
+    if (owner.isVerified !== "true") {
+      return res.status(403).json({
+        success: false,
+        message: "Account is pending verification",
+      });
+    }
+
+    // Generate JWT token
     const token = owner.generateAuthToken();
-    res.status(200).send({ message: "success", data: owner, token: token });
+
+    // Remove password from response data
+    const ownerData = owner.toObject();
+    delete ownerData.password;
+
+    // Set token in cookie with HTTP-only flag
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    // Send success response
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      data: {
+        owner: ownerData,
+        token,
+      },
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Internal Server Error" });
+    console.error("Login error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
@@ -315,5 +365,82 @@ module.exports.changePassword = async (req, res) => {
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).send({ message: "Internal Server Error" });
+  }
+};
+
+// Owner's drivers Attendance
+//
+module.exports.getOwnerDriversAttendance = async (req, res) => {
+  try {
+    const ownerId = req.params.ownerId;
+
+    // Find owner and populate drivers
+    const owner = await Owner.findById(ownerId).populate({
+      path: "Driver",
+      select: "_id username",
+    });
+
+    if (!owner) {
+      return res.status(404).json({
+        success: false,
+        message: "Owner not found",
+      });
+    }
+
+    // Get all driver IDs under this owner
+    const driverIds = owner.Driver.map((driver) => driver._id);
+
+    // Get attendance records for all these drivers
+    const attendance = await Attendance.find({
+      driver: { $in: driverIds },
+    })
+      .populate({
+        path: "driver",
+        select: "username email",
+      })
+      .populate({
+        path: "trips",
+        select: "Start End start_time end_time Vehicle",
+      })
+      .sort({ date: -1 });
+
+    // Calculate some useful statistics
+    const stats = attendance.reduce((acc, record) => {
+      const driverId = record.driver._id.toString();
+      if (!acc[driverId]) {
+        acc[driverId] = {
+          driverName: record.driver.username,
+          totalHours: 0,
+          daysWorked: 0,
+          averageHoursPerDay: 0,
+          trips: 0,
+        };
+      }
+
+      acc[driverId].totalHours += record.totalHours;
+      acc[driverId].daysWorked += 1;
+      acc[driverId].trips += record.trips.length;
+      acc[driverId].averageHoursPerDay =
+        acc[driverId].totalHours / acc[driverId].daysWorked;
+
+      return acc;
+    }, {});
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        attendance,
+        stats,
+        totalDrivers: driverIds.length,
+        totalRecords: attendance.length,
+      },
+    });
+  } catch (error) {
+    console.error("Get owner drivers attendance error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching attendance records",
+      error: error.message,
+    });
   }
 };

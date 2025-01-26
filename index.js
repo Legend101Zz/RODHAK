@@ -24,7 +24,20 @@ const session = require("express-session");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.use(cors());
+
+// CORS Configuration
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? "https://your-production-domain.com" // Replace with your production domain
+      : ["http://localhost:5001", "http://localhost:3000"], // Add all your development domains
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // This is important for cookies/credentials
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.static(path.join(__dirname, "public")));
 

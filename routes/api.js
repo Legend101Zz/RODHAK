@@ -1,24 +1,28 @@
 const express = require("express");
 const router = express.Router();
 const apis = require("../controllers/api.controller");
-
-//routes
-router.route("/coordinate").post(apis.api);
-router.route("/trips").get(apis.trips);
-
-router.route("/owner").post(apis.owner);
-router.route("/map/:tripId").get(apis.trip);
-router.route("/trip/:tripId").get(apis.singleTrip);
-router.route("/trip/Coords/:id").get(apis.getTripCoordsData);
-router.route("/owner/:id").get(apis.ownerData);
-
 const auth = require("../middleware/auth");
-// Password reset routes
+
+// Public routes (no auth required)
+router.post("/owner", apis.owner); // login
 router.post("/request-reset", apis.requestPasswordReset);
 router.post("/reset-password", apis.resetPassword);
-router.post("/change-password", auth, apis.changePassword);
 
-//depreciated apis
-router.route("/directions/:id").post(apis.directions);
+//map routes
+router.get("/trips", apis.trips);
+router.get("/map/:tripId", apis.trip);
+router.get("/trip/:tripId", apis.singleTrip);
+router.get("/trip/Coords/:id", apis.getTripCoordsData);
+
+// Protected routes (auth required)
+router.use(auth); // Apply auth middleware to all routes below this line
+
+router.post("/change-password", apis.changePassword);
+router.get("/owner/:id", apis.ownerData);
+router.get("/attendance/:ownerId", apis.getOwnerDriversAttendance);
+
+// If you still need these legacy routes
+router.post("/coordinate", apis.api);
+router.post("/directions/:id", apis.directions);
 
 module.exports = router;

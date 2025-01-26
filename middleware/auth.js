@@ -1,26 +1,63 @@
 const jwt = require("jsonwebtoken");
+const Owner = require("../models/owner.schema");
 
 const auth = async (req, res, next) => {
   try {
-    // Get token from header
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+    // Check for token in both header and cookies
+    const tokenFromHeader = req.header("Authorization")?.replace("Bearer ", "");
+    const tokenFromCookie = req.cookies?.token;
+    const token = tokenFromHeader || tokenFromCookie;
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "No auth token found",
+        message: "Access denied. No token provided.",
       });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWTSECRETKEY);
-    req.owner = decoded;
-    next();
+    try {
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Find owner and exclude sensitive fields
+      const owner = await Owner.findById(decoded._id).select("-password");
+
+      if (!owner) {
+        throw new Error("Owner not found");
+      }
+
+      if (owner.isVerified !== "true") {
+        return res.status(403).json({
+          success: false,
+          message: "Account is pending verification",
+        });
+      }
+
+      // Add owner and token to request object
+      req.token = token;
+      req.owner = owner;
+
+      next();
+    } catch (err) {
+      if (err.name === "JsonWebTokenError") {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid token",
+        });
+      }
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({
+          success: false,
+          message: "Token expired",
+        });
+      }
+      throw err;
+    }
   } catch (error) {
-    console.error("Auth error:", error);
-    res.status(401).json({
+    console.error("Auth middleware error:", error);
+    res.status(500).json({
       success: false,
-      message: "Invalid auth token",
+      message: "Internal server error",
     });
   }
 };
