@@ -540,8 +540,10 @@ module.exports.endTripApi = async (req, res, next) => {
     // Get driver statistics
     const driver = updatedTrip.Driver;
     const totalTrips = driver.Trip.length;
-    const completedTrips = driver.Trip.filter((trip) => trip.isFinished).length;
-    const ongoingTrips = driver.Trip.filter((trip) => !trip.isFinished).length;
+    const completedTrips = driver.Trip.filter(
+      (trip) => !trip.isFinished
+    ).length;
+    const ongoingTrips = driver.Trip.filter((trip) => trip.isFinished).length;
 
     // Calculate average trip duration for this driver
     const driverCompletedTrips = driver.Trip.filter(
@@ -698,175 +700,193 @@ module.exports.getActiveTrips = async (req, res, next) => {
   }
 };
 
-module.exports.createTripApi = async (req, res, next) => {
+// Utility functions for coordinate handling
+const coordinateUtils = {
+  // Parse coordinates from various input formats
+  parseCoordinates(input) {
+    try {
+      // If input is already an array of numbers
+      if (
+        Array.isArray(input) &&
+        input.every((num) => typeof num === "number")
+      ) {
+        return input;
+      }
+
+      // If input is a string of array
+      if (typeof input === "string") {
+        // Handle stringified array
+        const parsed = JSON.parse(input);
+        if (Array.isArray(parsed)) {
+          return parsed.map(Number);
+        }
+      }
+
+      // If input is a string of coordinates
+      if (typeof input === "string" && input.includes(",")) {
+        return input.split(",").map((coord) => Number(coord.trim()));
+      }
+
+      throw new Error("Invalid coordinate format");
+    } catch (error) {
+      throw new Error(`Failed to parse coordinates: ${error.message}`);
+    }
+  },
+
+  // Validate coordinates are within reasonable bounds
+  validateCoordinates(coords) {
+    if (!Array.isArray(coords) || coords.length !== 2) {
+      throw new Error("Coordinates must be an array of 2 numbers");
+    }
+
+    const [lat, lng] = coords;
+    if (isNaN(lat) || isNaN(lng)) {
+      throw new Error("Coordinates must be valid numbers");
+    }
+
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      throw new Error("Coordinates are outside valid range");
+    }
+
+    return true;
+  },
+};
+
+// Vehicle validation functions
+const vehicleUtils = {
+  async validateVehicle(vehicleNumber) {
+    const normalizedNumber = vehicleNumber.toLowerCase().replace(/\W/g, "");
+    const vehicle = await Vehicle.findOne({ vehicleNum: normalizedNumber });
+
+    if (!vehicle) {
+      throw new Error("Vehicle is not registered");
+    }
+
+    if (vehicle.isVerified === "false") {
+      throw new Error("Vehicle is not verified");
+    }
+
+    return vehicle;
+  },
+
+  async checkOngoingTrip(vehicleNumber) {
+    const ongoingTrip = await Trip.findOne({
+      Vehicle: vehicleNumber,
+      isFinished: false,
+    });
+
+    if (ongoingTrip) {
+      throw new Error("Vehicle is currently on a trip and cannot be used");
+    }
+  },
+};
+// ====== CREATE TRIP API =========
+module.exports.createTripApi = async (req, res) => {
   try {
-    const id = req.body.driverId;
-    if (id) {
-      console.log("create Trip", req.body);
-      const start = req.body.source;
-      const end = req.body.destination;
-      const veh = req.body.vehicle;
-      var numLower = req.body.vehicle.toLowerCase();
-      const num = numLower.replace(/\W/g, "");
-      const vehicle = await Vehicle.findOne({ vehicleNum: num });
-      const starting = req.body.starting;
-      const ending = req.body.ending;
-      const viaRoute = req.body.viaRoute;
-      const via = req.body.via;
-      const start_time = req.body.start_time;
+    const {
+      driverId,
+      source,
+      destination,
+      vehicle: vehicleNumber,
+      starting,
+      ending,
+      via,
+      viaRoute,
+      start_time,
+      public: isPublic,
+    } = req.body;
 
-      if (vehicle) {
-        // Check if the vehicle has any ongoing trip
-        const ongoingTrip = await Trip.findOne({
-          Vehicle: vehicle.vehicleNum,
-          isFinished: false,
-        });
-
-        if (ongoingTrip) {
-          return res.status(201).json({
-            type: "user error",
-            message: "Vehicle is currently on a trip and cannot be used.",
-          });
-        }
-      }
-
-      console.log("create Trip", req.body, typeof via);
-
-      // console.log("req body check", req.body);
-
-      if (vehicle) {
-        if (req.body.public === "on") {
-          let check = true;
-          const trip = new Trip({
-            isPublic: check,
-            Driver: id,
-            Vehicle: vehicle.vehicleNum,
-            Type: vehicle.Type,
-            coordinateStart: starting,
-            coordinateEnd: ending,
-            Start: start,
-            End: end,
-            via: via,
-            viaRoute,
-            start_time: start_time,
-          });
-
-          if (vehicle.isVerified == "false") {
-            return res.status(201).json({
-              type: "user error",
-              message: "Vehicle not verified ",
-            });
-          }
-          await trip
-            .save()
-            .then(async (result) => {
-              // console.log(result, "result");
-              await Vehicle.findOneAndUpdate(
-                { vehicleNum: num },
-                { $push: { Trip: result._id } }
-              );
-
-              await Driver.findByIdAndUpdate(id, {
-                $push: { Trip: result._id },
-              });
-
-              return res.status(200).json({
-                message: "success",
-                data: {
-                  start: starting,
-                  ending: ending,
-                  isTripPublic: check,
-                  location1: start,
-                  location2: end,
-                  vehicle_num: veh,
-                  viaRoute,
-                  via: via,
-                  type: vehicle.Type,
-                  TripId: result._id,
-                  start_time: start_time,
-                },
-              });
-            })
-            .catch((err) => {
-              console.log(err);
-              return res.status(500).json({
-                type: "server failure",
-              });
-            });
-        } else {
-          let check = false;
-          const trip = new Trip({
-            isPublic: check,
-            Driver: id,
-            Vehicle: vehicle.vehicleNum,
-            Type: vehicle.Type,
-            coordinateStart: starting,
-            coordinateEnd: ending,
-            Start: start,
-            End: end,
-            viaRoute,
-            via: via,
-            start_time: start_time,
-          });
-
-          if (vehicle.isVerified == "false") {
-            return res.status(201).json({
-              type: "user error",
-              message: "Vehicle is not verified ",
-            });
-          }
-          await trip
-            .save()
-            .then(async (result) => {
-              await Vehicle.findOneAndUpdate(
-                { vehicleNum: num },
-                { $push: { Trip: result._id } }
-              );
-              await Driver.findByIdAndUpdate(id, {
-                $push: { Trip: result._id },
-              });
-
-              return res.status(200).json({
-                message: "success",
-                data: {
-                  start: starting,
-                  ending: ending,
-                  isTripPublic: check,
-                  location1: start,
-                  location2: end,
-                  vehicle_num: veh,
-                  type: vehicle.Type,
-                  TripId: result._id,
-                  viaRoute,
-                  via: via,
-                  start_time: start_time,
-                },
-              });
-            })
-            .catch((err) => {
-              console.log(err);
-              return res.status(500).json({
-                type: "server failure",
-              });
-            });
-        }
-      } else {
-        return res.status(201).json({
-          type: "user error",
-          message: "Vehicle is not registered ",
-        });
-      }
-    } else {
-      return res.status(201).json({
-        type: "user error",
-        message: "Invalid driver ID ",
+    // Validate driver ID
+    if (!driverId) {
+      return res.status(400).json({
+        type: "validation_error",
+        message: "Driver ID is required",
       });
     }
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      type: "server failure",
+
+    // Process and validate vehicle
+    const vehicle = await vehicleUtils.validateVehicle(vehicleNumber);
+    await vehicleUtils.checkOngoingTrip(vehicle.vehicleNum);
+
+    // Process coordinates
+    let processedCoordinates;
+    try {
+      processedCoordinates = {
+        starting: coordinateUtils.parseCoordinates(starting),
+        ending: coordinateUtils.parseCoordinates(ending),
+        via: coordinateUtils.parseCoordinates(via),
+      };
+
+      // Validate all coordinates
+      Object.values(processedCoordinates).forEach((coords) => {
+        coordinateUtils.validateCoordinates(coords);
+      });
+    } catch (error) {
+      return res.status(400).json({
+        type: "validation_error",
+        message: `Coordinate validation failed: ${error.message}`,
+      });
+    }
+
+    // Create trip object
+    const tripData = {
+      isPublic: isPublic === "on",
+      Driver: driverId,
+      Vehicle: vehicle.vehicleNum,
+      Type: vehicle.Type,
+      coordinateStart: processedCoordinates.starting,
+      coordinateEnd: processedCoordinates.ending,
+      via: processedCoordinates.via,
+      Start: source,
+      End: destination,
+      viaRoute,
+      start_time,
+    };
+
+    // Save trip and update references
+    const trip = new Trip(tripData);
+    const savedTrip = await trip.save();
+
+    // Update vehicle and driver records
+    await Promise.all([
+      Vehicle.findOneAndUpdate(
+        { vehicleNum: vehicle.vehicleNum },
+        { $push: { Trip: savedTrip._id } }
+      ),
+      Driver.findByIdAndUpdate(driverId, {
+        $push: { Trip: savedTrip._id },
+      }),
+    ]);
+
+    // Return success response
+    return res.status(200).json({
+      message: "success",
+      data: {
+        start: processedCoordinates.starting,
+        ending: processedCoordinates.ending,
+        isTripPublic: tripData.isPublic,
+        location1: source,
+        location2: destination,
+        vehicle_num: vehicleNumber,
+        viaRoute,
+        via: processedCoordinates.via,
+        type: vehicle.Type,
+        TripId: savedTrip._id,
+        start_time,
+      },
     });
+  } catch (error) {
+    // Handle different types of errors
+    const errorResponse = {
+      type:
+        error.name === "ValidationError" ? "validation_error" : "server_error",
+      message: error.message,
+    };
+
+    const statusCode = errorResponse.type === "validation_error" ? 400 : 500;
+
+    console.error("Trip creation error:", error);
+    return res.status(statusCode).json(errorResponse);
   }
 };
 
