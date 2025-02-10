@@ -3,6 +3,7 @@ const Driver = require("../models/driver.schema");
 const Admin = require("../models/admin.schema");
 const Vehicle = require("../models/vehicle.schema");
 const Trip = require("../models/trip.schema");
+const Attendance = require("../models/attendance.schema");
 const {
   generatePasswordResetToken,
   sendPasswordResetEmail,
@@ -31,7 +32,7 @@ module.exports.owner = async (req, res) => {
   try {
     // Validate request body
     const { email, password } = req.body;
-    console.log("data", req.body);
+
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -203,7 +204,7 @@ module.exports.singleTrip = async (req, res, next) => {
 //send individual owner data no vehicles and rest
 
 module.exports.ownerData = async (req, res, next) => {
-  // console.log("checl");
+  console.log("checl");
 
   const id = req.params.id;
   const owner = await Owner.findById(id);

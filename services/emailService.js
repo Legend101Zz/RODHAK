@@ -320,11 +320,263 @@ const sendPasswordResetEmail = async (owner, resetToken) => {
   }
 };
 
+const sendDriverRegistrationEmails = async (driverData, ownerData) => {
+  // Email to Driver
+  const driverMailOptions = {
+    from: '"RODHAK Team" <support@himraahi.in>',
+    to: driverData.email,
+    subject: "RODHAK - Driver Registration Initiated",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            background: linear-gradient(to right, #c6426e, #642b73);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 8px 8px 0 0;
+          }
+          .content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <img src="https://www.live.himraahi.in/static/media/rd.b58b48b62a94a351f327.png" alt="RODHAK Logo" style="width: 150px;">
+            <h1>Welcome to RODHAK!</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${driverData.username},</h2>
+            <p>Thank you for registering as a driver with RODHAK. Your registration process has been initiated successfully.</p>
+
+            <h3>Your Registration Details:</h3>
+            <ul>
+              <li>Name: ${driverData.username}</li>
+              <li>Email: ${driverData.email}</li>
+              <li>Phone: ${driverData.phone}</li>
+              <li>Business Owner: ${ownerData.business}</li>
+              <li>Password: ${driverData.password}</li>
+            </ul>
+
+            <h3>Next Steps:</h3>
+            <p>Our admin team will review your registration details. This typically takes 24-48 hours. Once verified, you'll receive another email with your login credentials.</p>
+
+            <p>If you have any questions in the meantime, please contact your business owner or reach out to our support team.</p>
+          </div>
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} RODHAK. All rights reserved.</p>
+            <p>Need help? Contact us at <a href="mailto:support@himraahi.in">support@himraahi.in</a></p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  };
+
+  // Email to Owner
+  const ownerMailOptions = {
+    from: '"RODHAK Team" <support@himraahi.in>',
+    to: ownerData.email,
+    subject: "RODHAK - New Driver Registration",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            background: linear-gradient(to right, #c6426e, #642b73);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 8px 8px 0 0;
+          }
+          .content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <img src="https://www.live.himraahi.in/static/media/rd.b58b48b62a94a351f327.png" alt="RODHAK Logo" style="width: 150px;">
+            <h1>New Driver Registration</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${ownerData.username},</h2>
+            <p>A new driver has been registered under your business on RODHAK.</p>
+
+            <h3>Driver Details:</h3>
+            <ul>
+              <li>Name: ${driverData.username}</li>
+              <li>Email: ${driverData.email}</li>
+              <li>Phone: ${driverData.phone}</li>
+              <li>Age: ${driverData.age}</li>
+            </ul>
+
+            <p>The driver's registration is pending verification by our admin team. You'll be notified once the verification is complete.</p>
+
+            <p>You can view the driver's details in your dashboard once they're verified.</p>
+          </div>
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} RODHAK. All rights reserved.</p>
+            <p>Need help? Contact us at <a href="mailto:support@himraahi.in">support@himraahi.in</a></p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  };
+
+  try {
+    await Promise.all([
+      transporter.sendMail(driverMailOptions),
+      transporter.sendMail(ownerMailOptions),
+    ]);
+    return true;
+  } catch (error) {
+    console.error("Error sending registration emails:", error);
+    return false;
+  }
+};
+
+const sendVehicleEmails = async (vehicleData, ownerData) => {
+  const mailOptions = {
+    from: '"RODHAK Team" <support@himraahi.in>',
+    to: ownerData.email,
+    subject: "RODHAK - New Vehicle Registration Initiated",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            background: linear-gradient(to right, #c6426e, #642b73);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 8px 8px 0 0;
+          }
+          .content {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          .vehicle-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <img src="https://www.live.himraahi.in/static/media/rd.b58b48b62a94a351f327.png" alt="RODHAK Logo" style="width: 150px;">
+            <h1>New Vehicle Registration</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${ownerData.username},</h2>
+            <p>A new vehicle has been registered under your business "${ownerData.business}" on RODHAK.</p>
+
+            <div class="vehicle-info">
+              <h3>Vehicle Details:</h3>
+              <ul>
+                <li><strong>Vehicle Name:</strong> ${vehicleData.name}</li>
+                <li><strong>Vehicle Number:</strong> ${vehicleData.vehicleNum}</li>
+                <li><strong>Type:</strong> ${vehicleData.Type}</li>
+              </ul>
+            </div>
+
+            <h3>Next Steps:</h3>
+            <ol>
+              <li>Our admin team will verify the vehicle details</li>
+              <li>You'll receive a confirmation email once verification is complete</li>
+              <li>After verification, you can assign drivers to this vehicle</li>
+              <li>Start tracking trips and managing your fleet efficiently</li>
+            </ol>
+
+            <p><strong>Note:</strong> The verification process typically takes 24-48 hours. We'll notify you once it's complete.</p>
+          </div>
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} RODHAK. All rights reserved.</p>
+            <p>Need help? Contact us at <a href="mailto:support@himraahi.in">support@himraahi.in</a></p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error("Error sending vehicle registration email:", error);
+    return false;
+  }
+};
+
 const generatePasswordResetToken = () => {
   return crypto.randomBytes(32).toString("hex");
 };
 
 module.exports = {
+  sendVehicleEmails,
+  sendDriverRegistrationEmails,
   generateVerificationToken,
   sendVerificationEmail,
   generatePasswordResetToken,

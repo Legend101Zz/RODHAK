@@ -106,13 +106,46 @@ const sendVerificationEmail = async (type, userData) => {
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            /* Same styles as above */
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(to right, #c6426e, #642b73);
+              color: white;
+              text-align: center;
+              padding: 30px 20px;
+              border-radius: 8px 8px 0 0;
+            }
+            .content {
+              background-color: #ffffff;
+              padding: 30px;
+              border-radius: 0 0 8px 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 24px;
+              background: linear-gradient(to right, #c6426e, #642b73);
+              color: white !important;
+              text-decoration: none;
+              border-radius: 4px;
+              margin: 20px 0;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              color: #666;
+              font-size: 0.9em;
+            }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <img src="https://himraahi.in/logo.png" alt="RODHAK Logo" style="width: 150px;">
+              <img src="https://www.live.himraahi.in/static/media/rd.b58b48b62a94a351f327.png" alt="RODHAK Logo" style="width: 150px;">
               <h1>Driver Account Verified!</h1>
             </div>
             <div class="content">
@@ -156,13 +189,46 @@ const sendVerificationEmail = async (type, userData) => {
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            /* Same styles as above */
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(to right, #c6426e, #642b73);
+              color: white;
+              text-align: center;
+              padding: 30px 20px;
+              border-radius: 8px 8px 0 0;
+            }
+            .content {
+              background-color: #ffffff;
+              padding: 30px;
+              border-radius: 0 0 8px 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 24px;
+              background: linear-gradient(to right, #c6426e, #642b73);
+              color: white !important;
+              text-decoration: none;
+              border-radius: 4px;
+              margin: 20px 0;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              color: #666;
+              font-size: 0.9em;
+            }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <img src="https://himraahi.in/logo.png" alt="RODHAK Logo" style="width: 150px;">
+              <img src="https://www.live.himraahi.in/static/media/rd.b58b48b62a94a351f327.png" alt="RODHAK Logo" style="width: 150px;">
               <h1>Vehicle Verified!</h1>
             </div>
             <div class="content">

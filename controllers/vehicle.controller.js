@@ -1,6 +1,7 @@
 const Vehicle = require("../models/vehicle.schema");
 const Trip = require("../models/trip.schema");
 const Owner = require("../models/owner.schema");
+const { sendVehicleEmails } = require("../services/emailService");
 
 // Utility function to handle errors
 const handleError = (err, res) => {
@@ -14,20 +15,39 @@ const handleError = (err, res) => {
 
 //vehicle-registration post request
 
-module.exports.register = async (req, res, next) => {
+module.exports.register = async (req, res) => {
   try {
     // Parse the owner ID from the request body
-    const ownerId = JSON.parse(req.body.id);
+    // console.log("check", req.body);
+    const ownerId = req.body.id;
+
+    // Find owner first to get their details
+    const owner = await Owner.findById(ownerId);
+    if (!owner) {
+      return res.status(404).send({
+        success: false,
+        message: "Owner not found",
+      });
+    }
 
     // Create a lowercase, non-alphanumeric version of the vehicleNum
     const numLower = req.body.vehicleNum.toLowerCase();
     const num = numLower.replace(/\W/g, "");
 
+    // Check if vehicle already exists
+    const existingVehicle = await Vehicle.findOne({ vehicleNum: num });
+    if (existingVehicle) {
+      return res.status(400).send({
+        success: false,
+        message: "Vehicle with this number already exists",
+      });
+    }
+
     // Create a new Vehicle instance
     const vehicle = new Vehicle({
       name: req.body.name,
       vehicleNum: num,
-      Type: req.body.type, // Assuming "type" is included in the request body
+      Type: req.body.type,
       Owner: ownerId,
     });
 
@@ -40,14 +60,31 @@ module.exports.register = async (req, res, next) => {
       { $push: { Vehicle: savedVehicle._id } },
     );
 
+    // Send notification email
+    const emailSent = await sendVehicleEmails(
+      {
+        name: savedVehicle.name,
+        vehicleNum: savedVehicle.vehicleNum,
+        Type: savedVehicle.Type,
+      },
+      {
+        username: owner.username,
+        email: owner.email,
+        business: owner.business,
+      },
+    );
+
     res.status(200).send({
+      success: true,
       message: "Success! Vehicle registration complete",
       data: savedVehicle,
+      emailSent,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Vehicle registration error:", error);
     res.status(500).send({
-      message: "Error",
+      success: false,
+      message: "An error occurred during vehicle registration",
       error: error.message,
     });
   }

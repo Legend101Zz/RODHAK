@@ -11,6 +11,7 @@ const turf = require("@turf/distance");
 const Owner = require("../models/owner.schema");
 const Vehicle = require("../models/vehicle.schema");
 const Attendance = require("../models/attendance.schema");
+const { sendDriverRegistrationEmails } = require("../services/emailService");
 
 //mail-setup
 // const nodemailer = require("nodemailer");
@@ -498,29 +499,121 @@ module.exports.end = async (req, res, next) => {
 module.exports.endTripApi = async (req, res, next) => {
   const id = req.body.tripId;
 
-  if (id) {
-    // console.log(id);
-    const endTime = new Date().toTimeString().split(" ")[0];
-    await Trip.findByIdAndUpdate(id, { isFinished: true, end_time: endTime })
-      .then(async (result) => {
-        // console.log(result);
-        await updateAttendanceOnTripEnd(id);
-        return res.status(200).json({
-          type: "success",
-          message: "trip ended",
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        return res.status(501).json({
-          type: "error",
-          message: "internal server error",
-        });
-      });
-  } else {
-    return res.status(200).json({
+  if (!id) {
+    return res.status(400).json({
       type: "error",
       message: "invalid trip id",
+    });
+  }
+
+  try {
+    const endTime = new Date().toTimeString().split(" ")[0];
+
+    // Update trip status and end time
+    const updatedTrip = await Trip.findByIdAndUpdate(
+      id,
+      { isFinished: true, end_time: endTime },
+      { new: true }
+    ).populate({
+      path: "Driver",
+      populate: {
+        path: "Trip",
+        model: "Trip",
+      },
+    });
+
+    if (!updatedTrip) {
+      return res.status(404).json({
+        type: "error",
+        message: "Trip not found",
+      });
+    }
+
+    // Calculate trip duration
+    const startTimeArr = updatedTrip.start_time.split(":");
+    const endTimeArr = endTime.split(":");
+    const durationInMinutes =
+      parseInt(endTimeArr[0]) * 60 +
+      parseInt(endTimeArr[1]) -
+      (parseInt(startTimeArr[0]) * 60 + parseInt(startTimeArr[1]));
+
+    // Get driver statistics
+    const driver = updatedTrip.Driver;
+    const totalTrips = driver.Trip.length;
+    const completedTrips = driver.Trip.filter((trip) => trip.isFinished).length;
+    const ongoingTrips = driver.Trip.filter((trip) => !trip.isFinished).length;
+
+    // Calculate average trip duration for this driver
+    const driverCompletedTrips = driver.Trip.filter(
+      (trip) => trip.isFinished && trip.start_time && trip.end_time
+    );
+
+    let totalDuration = 0;
+    driverCompletedTrips.forEach((trip) => {
+      const tripStart = trip.start_time.split(":");
+      const tripEnd = trip.end_time.split(":");
+      const duration =
+        parseInt(tripEnd[0]) * 60 +
+        parseInt(tripEnd[1]) -
+        (parseInt(tripStart[0]) * 60 + parseInt(tripStart[1]));
+      totalDuration += duration;
+    });
+
+    const averageDuration =
+      driverCompletedTrips.length > 0
+        ? Math.round(totalDuration / driverCompletedTrips.length)
+        : 0;
+
+    // Get vehicle details
+    const vehicle = await Vehicle.findOne({ vehicleNum: updatedTrip.Vehicle });
+
+    // Update attendance
+    await updateAttendanceOnTripEnd(id);
+
+    return res.status(200).json({
+      type: "success",
+      message: "trip ended successfully",
+      data: {
+        trip: {
+          id: updatedTrip._id,
+          startLocation: updatedTrip.Start,
+          endLocation: updatedTrip.End,
+          viaLocation: updatedTrip.viaRoute,
+          startTime: updatedTrip.start_time,
+          endTime: updatedTrip.end_time,
+          duration: durationInMinutes,
+          type: updatedTrip.Type,
+          isPublic: updatedTrip.isPublic,
+          vehicleNum: updatedTrip.Vehicle,
+        },
+        driver: {
+          id: driver._id,
+          name: driver.username,
+          phone: driver.phone,
+          email: driver.email,
+          stats: {
+            totalTrips,
+            completedTrips,
+            ongoingTrips,
+            averageTripDuration: averageDuration,
+          },
+        },
+        vehicle: vehicle
+          ? {
+              id: vehicle._id,
+              name: vehicle.name,
+              type: vehicle.Type,
+              totalTrips: vehicle.Trip.length,
+            }
+          : null,
+      },
+    });
+  } catch (err) {
+    console.error("Error ending trip:", err);
+    return res.status(500).json({
+      type: "error",
+      message: "internal server error",
+      error: err.message,
     });
   }
 };
@@ -820,15 +913,25 @@ module.exports.DriverRegisterAPI = async (req, res) => {
     const obj = Object.assign({}, req.files);
     const { ownId, username, phone, email, age, password } = req.body;
     console.log(req.body, req.files);
-    const user = await Driver.findOne({ email });
-    const own = await Owner.findById(JSON.parse(ownId));
 
-    if (user || !own) {
+    // Check for existing driver
+    const user = await Driver.findOne({ email });
+    const own = await Owner.findById(ownId);
+
+    if (user) {
       return res.status(401).json({
         message: "Driver with the given email already exists",
       });
     }
 
+    if (!own) {
+      return res.status(401).json({
+        message:
+          "You need to be associated with an owner fleet to proceded further",
+      });
+    }
+
+    // Process images and create driver
     const salt = await bcrypt.genSalt(Number(process.env.SALT));
     const hashPassword = await bcrypt.hash(password, salt);
 
@@ -853,41 +956,36 @@ module.exports.DriverRegisterAPI = async (req, res) => {
       legal: legalArr.map((f) => ({ url: f.url, filename: f.filename })),
     });
 
+    // Save driver and update owner
     const savedDriver = await driver.save();
     await Owner.findByIdAndUpdate(
       { _id: own._id },
       { $push: { Driver: savedDriver._id } }
     );
 
+    // Send notification emails
+    const emailsSent = await sendDriverRegistrationEmails(
+      { username, email, phone, age, password },
+      {
+        username: own.username,
+        email: own.email,
+        business: own.business,
+      }
+    );
+
+    // Return response
     res.status(200).json({
       type: "success",
       message: "Driver registration successful!",
       driverId: savedDriver._id,
+      emailsSent,
     });
-    // Sending registration email
-    // const mailOptions = {
-    //   from: process.env.GMAIL_MAIL,
-    //   to: email,
-    //   subject: "Driver Registration Process initiated successfully",
-    //   html: `Dear ${username}, Thank you for registering as a driver with us. Your credentials are: email - <b>${email}</b>, password - <b>${password}</b>. Please use this to login again after we get your details verified.`,
-    // };
-
-    // // Assume `transporter` is properly configured
-    // transporter.sendMail(mailOptions, (error) => {
-    //   if (error) {
-    //     console.error(error);
-    //     return res.status(500).json({
-    //       type: "failure",
-    //       message: "Email not sent",
-    //     });
-    //   }
-
-    // });
   } catch (error) {
-    console.error(error);
+    console.error("Driver registration error:", error);
     res.status(500).json({
-      type: "failure",
-      message: "Server error",
+      type: "error",
+      message: "An error occurred during registration",
+      error: error.message,
     });
   }
 };

@@ -165,7 +165,7 @@ module.exports.vehicleVerify = async (req, res, next) => {
         { isVerified: "true" },
         { new: true },
       ).populate("Owner");
-
+      // console.log("checl))", vehicle);
       // For vehicles, we send the email to the owner
       const emailData = {
         ...vehicle.toObject(),
