@@ -9,6 +9,8 @@ const {
   sendPasswordResetEmail,
 } = require("../services/emailService");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 var mongoose = require("mongoose");
 
 // -----------NOT IN USE NOW AS WE USE WEBSOCKETS TO HANDLE THIS--------------
@@ -24,7 +26,7 @@ module.exports.api = async (req, res, next) => {
   // console.log("coords__API__STARTED=--->", id, coordinates);
   await Trip.findOneAndUpdate(
     { _id: id },
-    { currentCoordinates: coordinates, Speed: speed },
+    { currentCoordinates: coordinates, Speed: speed }
   );
 };
 //owner login
@@ -43,7 +45,7 @@ module.exports.owner = async (req, res) => {
     // Find owner excluding sensitive data
     const owner = await Owner.findOne(
       { email },
-      { password: 1, email: 1, username: 1, business: 1, isVerified: 1 },
+      { password: 1, email: 1, username: 1, business: 1, isVerified: 1 }
     );
 
     // Check if owner exists
@@ -118,7 +120,7 @@ module.exports.trips = async (req, res, next) => {
 
       isFinished: 0,
       isPublic: 0,
-    },
+    }
   );
   console.log(trips, "hello1");
   res.status(200).send({ message: "Success", data: trips });
@@ -267,7 +269,7 @@ module.exports.requestPasswordReset = async (req, res) => {
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(to right, #c6426e, #642b73); padding: 20px; text-align: center; color: white;">
-            <img src="https://himraahi.in/logo.png" alt="RODHAK Logo" style="width: 150px;">
+            <img src="https://www.live.himraahi.in/static/media/rd.b58b48b62a94a351f327.png" alt="RODHAK Logo" style="width: 150px;">
             <h2>Password Reset Request</h2>
           </div>
           <div style="padding: 20px; background: white; border-radius: 0 0 8px 8px;">
@@ -300,6 +302,42 @@ module.exports.requestPasswordReset = async (req, res) => {
   }
 };
 
+// utility fn
+
+// Generate password changed email template
+const generatePasswordChangedEmailTemplate = (username) => {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: linear-gradient(to right, #c6426e, #642b73); padding: 20px; text-align: center; color: white;">
+        <img src="https://www.live.himraahi.in/static/media/rd.b58b48b62a94a351f327.png" alt="RODHAK Logo" style="width: 150px;">
+        <h2>Password Changed - Security Alert</h2>
+      </div>
+      <div style="padding: 20px; background: white; border-radius: 0 0 8px 8px;">
+        <p>Hello ${username},</p>
+        <p>This email confirms that your RODHAK account password has been changed.</p>
+        <div style="background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 4px; margin: 20px 0;">
+          <strong>⚠️ Security Notice:</strong>
+          <p>If you did not make this change, please:</p>
+          <ol style="margin-top: 10px;">
+            <li>Change your password immediately</li>
+            <li>Contact our support team at support@himraahi.in</li>
+          </ol>
+        </div>
+        <p>For security purposes, we recommend:</p>
+        <ul style="color: #666;">
+          <li>Using a strong, unique password</li>
+          <li>Never sharing your password with anyone</li>
+          <li>Regularly reviewing your account activity</li>
+        </ul>
+        <p style="margin-top: 20px;">Best regards,<br>The RODHAK Security Team</p>
+      </div>
+      <div style="text-align: center; padding: 20px; color: #666; font-size: 0.8em;">
+        <p>This is an automated message, please do not reply directly to this email.</p>
+      </div>
+    </div>
+  `;
+};
+
 // Reset password using token
 module.exports.resetPassword = async (req, res) => {
   try {
@@ -328,6 +366,26 @@ module.exports.resetPassword = async (req, res) => {
 
     // Generate new auth token
     const authToken = owner.generateAuthToken();
+
+    // Send password change notification email
+    const transporter = nodemailer.createTransport({
+      host: "smtp.hostinger.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.SUPPORT_EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: '"RODHAK Support" <support@himraahi.in>',
+      to: owner.email,
+      subject: "Password Changed - Security Alert - RODHAK",
+      html: generatePasswordChangedEmailTemplate(owner.username),
+    };
+
+    await transporter.sendMail(mailOptions);
 
     res.status(200).send({
       message: "Password reset successful",

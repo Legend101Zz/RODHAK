@@ -30,6 +30,8 @@ const OwnerSchema = new Schema(
     emailVerified: { type: Boolean, default: false },
     emailVerificationToken: String,
     emailVerificationTokenExpires: Date,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     Driver: [
       {
         type: Schema.Types.ObjectId,
@@ -45,7 +47,7 @@ const OwnerSchema = new Schema(
       },
     ],
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 OwnerSchema.plugin(require("mongoose-autopopulate"));
