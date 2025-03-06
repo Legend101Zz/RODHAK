@@ -530,13 +530,17 @@ const sendVehicleEmails = async (vehicleData, ownerData) => {
           </div>
           <div class="content">
             <h2>Hello ${ownerData.username},</h2>
-            <p>A new vehicle has been registered under your business "${ownerData.business}" on RODHAK.</p>
+            <p>A new vehicle has been registered under your business "${
+              ownerData.business
+            }" on RODHAK.</p>
 
             <div class="vehicle-info">
               <h3>Vehicle Details:</h3>
               <ul>
                 <li><strong>Vehicle Name:</strong> ${vehicleData.name}</li>
-                <li><strong>Vehicle Number:</strong> ${vehicleData.vehicleNum}</li>
+                <li><strong>Vehicle Number:</strong> ${
+                  vehicleData.vehicleNum
+                }</li>
                 <li><strong>Type:</strong> ${vehicleData.Type}</li>
               </ul>
             </div>
@@ -570,6 +574,139 @@ const sendVehicleEmails = async (vehicleData, ownerData) => {
   }
 };
 
+const sendDriverPasswordResetEmail = async (driver, resetToken) => {
+  const resetUrl = `${process.env.BASE_URL}/api/v1/driver/reset-password/${resetToken}`;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .header {
+          background: linear-gradient(to right, #c6426e, #642b73);
+          color: white;
+          text-align: center;
+          padding: 20px;
+          border-radius: 8px 8px 0 0;
+        }
+        .content {
+          background-color: #ffffff;
+          padding: 30px;
+          border-radius: 0 0 8px 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+          width: 150px;
+          height: auto;
+          margin-bottom: 20px;
+        }
+        .button {
+          display: inline-block;
+          padding: 12px 24px;
+          background: linear-gradient(to right, #c6426e, #642b73);
+          color: white;
+          text-decoration: none;
+          border-radius: 4px;
+          font-weight: bold;
+          margin: 20px 0;
+        }
+        .warning {
+          background-color: #fff3cd;
+          border: 1px solid #ffeeba;
+          padding: 15px;
+          border-radius: 4px;
+          margin: 15px 0;
+          font-size: 0.9em;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <img src="https://www.live.himraahi.in/static/media/rd.b58b48b62a94a351f327.png" alt="RODHAK Logo" class="logo">
+          <h1>Driver Password Reset Request</h1>
+        </div>
+        <div class="content">
+          <h2>Hello ${driver.username},</h2>
+          <p>We received a request to reset your password for your RODHAK driver account.</p>
+
+          <div style="text-align: center;">
+            <a href="${resetUrl}" class="button">Reset Password</a>
+          </div>
+
+          <div class="warning">
+            <p><strong>⚠️ Important:</strong></p>
+            <ul>
+              <li>This link is valid for 1 hour only</li>
+              <li>If you didn't request this password reset, please ignore this email</li>
+              <li>Your password will remain unchanged if you don't use this link</li>
+            </ul>
+          </div>
+
+          <p>For security reasons, this password reset link can only be used once.</p>
+
+          <p style="color: #666; font-size: 0.9em;">
+            If the button above doesn't work, copy and paste this link in your browser:<br>
+            ${resetUrl}
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const textContent = `
+    Driver Password Reset Request - RODHAK
+
+    Hello ${driver.username},
+
+    We received a request to reset your password for your RODHAK driver account.
+
+    To reset your password, please visit this link:
+    ${resetUrl}
+
+    Important:
+    - This link is valid for 1 hour only
+    - If you didn't request this password reset, please ignore this email
+    - Your password will remain unchanged if you don't use this link
+
+    For security reasons, this password reset link can only be used once.
+
+    Best regards,
+    The RODHAK Team
+  `;
+
+  const mailOptions = {
+    from: '"RODHAK Security" <support@himraahi.in>',
+    to: driver.email,
+    subject: "Driver Password Reset Request - RODHAK",
+    html: htmlContent,
+    text: textContent,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error("Error sending driver password reset email:", error);
+    return false;
+  }
+};
+
 const generatePasswordResetToken = () => {
   return crypto.randomBytes(32).toString("hex");
 };
@@ -581,4 +718,5 @@ module.exports = {
   sendVerificationEmail,
   generatePasswordResetToken,
   sendPasswordResetEmail,
+  sendDriverPasswordResetEmail,
 };

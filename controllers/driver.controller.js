@@ -11,7 +11,11 @@ const turf = require("@turf/distance");
 const Owner = require("../models/owner.schema");
 const Vehicle = require("../models/vehicle.schema");
 const Attendance = require("../models/attendance.schema");
-const { sendDriverRegistrationEmails } = require("../services/emailService");
+const {
+  sendDriverRegistrationEmails,
+  generatePasswordResetToken,
+  sendDriverPasswordResetEmail,
+} = require("../services/emailService");
 
 //mail-setup
 // const nodemailer = require("nodemailer");
@@ -1193,3 +1197,195 @@ function convertTo24Hour(timeString) {
     .toString()
     .padStart(2, "0")}`;
 }
+
+// ========= Password reset functionality ===============
+
+// Handle password reset request
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Find the driver by email
+    const driver = await Driver.findOne({ email });
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "No account with that email address exists",
+      });
+    }
+
+    // Generate a reset token
+    const resetToken = generatePasswordResetToken();
+
+    // Set token and expiration (1 hour)
+    driver.resetPasswordToken = resetToken;
+    driver.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+    await driver.save();
+
+    // Send reset email
+    const emailSent = await sendDriverPasswordResetEmail(driver, resetToken);
+
+    if (emailSent) {
+      return res.status(200).json({
+        success: true,
+        message: "Password reset email sent",
+      });
+    } else {
+      driver.resetPasswordToken = undefined;
+      driver.resetPasswordExpires = undefined;
+      await driver.save();
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send password reset email",
+      });
+    }
+  } catch (error) {
+    console.error("Error in forgotPassword:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while processing your request",
+    });
+  }
+};
+
+// Render reset password form
+exports.resetPasswordForm = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Find driver with valid token
+    const driver = await Driver.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!driver) {
+      return res.render("driver/reset-password-error", {
+        message: "Password reset token is invalid or has expired",
+      });
+    }
+
+    // Render password reset form
+    res.render("driver/reset-password", {
+      token,
+      email: driver.email,
+    });
+  } catch (error) {
+    console.error("Error in resetPasswordForm:", error);
+    res.render("driver/reset-password-error", {
+      message: "An error occurred. Please try again.",
+    });
+  }
+};
+
+// Process reset password form submission
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    // Basic validation
+    if (password !== confirmPassword) {
+      return res.render("driver/reset-password", {
+        token,
+        error: "Passwords do not match",
+      });
+    }
+
+    // Find driver with valid token
+    const driver = await Driver.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!driver) {
+      return res.render("driver/reset-password-error", {
+        message: "Password reset token is invalid or has expired",
+      });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(Number(process.env.SALT));
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    // Update driver's password and clear reset token
+    driver.password = hashPassword;
+    driver.resetPasswordToken = undefined;
+    driver.resetPasswordExpires = undefined;
+
+    await driver.save();
+
+    // Render success page
+    res.render("driver/reset-password-success");
+  } catch (error) {
+    console.error("Error in resetPassword:", error);
+    res.render("driver/reset-password-error", {
+      message: "An error occurred while resetting your password",
+    });
+  }
+};
+
+// API version of forgot password for mobile app
+exports.forgotPasswordApi = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    // Find the driver by email
+    const driver = await Driver.findOne({ email });
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "No account with that email address exists",
+      });
+    }
+
+    // Generate a reset token
+    const resetToken = generatePasswordResetToken();
+
+    // Set token and expiration (1 hour)
+    driver.resetPasswordToken = resetToken;
+    driver.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+    await driver.save();
+
+    // Send reset email
+    const emailSent = await sendDriverPasswordResetEmail(driver, resetToken);
+
+    if (emailSent) {
+      return res.status(200).json({
+        success: true,
+        message: "Password reset email sent successfully",
+        data: {
+          email: driver.email,
+        },
+      });
+    } else {
+      // Clean up if email fails
+      driver.resetPasswordToken = undefined;
+      driver.resetPasswordExpires = undefined;
+      await driver.save();
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send password reset email. Please try again later.",
+      });
+    }
+  } catch (error) {
+    console.error("Error in forgotPasswordApi:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while processing your request",
+    });
+  }
+};

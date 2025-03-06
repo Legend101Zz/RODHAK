@@ -47,4 +47,18 @@ router.route("/registerAPI").post(
 router.route("/vehicles/:driverId").get(drivers.getDriverVerifiedVehicles);
 router.route("/trips/history/:driverId").get(drivers.getDriverTripHistory);
 
+// Password reset routes
+router
+  .route("/forgot-password")
+  .get((req, res) => {
+    res.render("driver/forgot-password");
+  })
+  .post(drivers.forgotPassword);
+
+router.route("/reset-password/:token").get(drivers.resetPasswordForm);
+router.route("/reset-password/:token").post(drivers.resetPassword);
+
+// API route for mobile app
+router.route("/forgot-password/api").post(drivers.forgotPasswordApi);
+
 module.exports = router;

@@ -34,6 +34,8 @@ const driverSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Owner",
     },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   { timestamps: true }
 );
