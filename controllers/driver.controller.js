@@ -625,7 +625,9 @@ module.exports.loginVerifyApi = async (req, res, next) => {
   const email = req.body.mail;
 
   try {
-    const driver = await Driver.findOne({ email }).select(" -legal");
+    const driver = await Driver.findOne({ email })
+      .select(" -legal")
+      .populate("Owner", "username phone business");
 
     if (!driver) {
       return res.status(401).json({
@@ -646,6 +648,15 @@ module.exports.loginVerifyApi = async (req, res, next) => {
     const totalTrips = driver.Trip.length.toString();
     const imageUrls = driver.images.map((image) => image.url);
 
+    // Extract owner information
+    const ownerInfo = driver.Owner
+      ? {
+          ownerId: driver.Owner._id,
+          ownerName: driver.Owner.username || driver.Owner.business, // Use business if username isn't available
+          ownerPhone: driver.Owner.phone,
+        }
+      : null;
+
     return res.status(200).json({
       message: "success",
       data: {
@@ -658,6 +669,7 @@ module.exports.loginVerifyApi = async (req, res, next) => {
         isVerified: driver.isVerified,
         totalTrips,
         imageUrls,
+        owner: ownerInfo,
       },
     });
   } catch (err) {
@@ -1009,3 +1021,175 @@ module.exports.DriverRegisterAPI = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get verified vehicles for a driver
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+module.exports.getDriverVerifiedVehicles = async (req, res) => {
+  try {
+    const driverId = req.params.driverId;
+    const limit = parseInt(req.query.limit) || 5; // Default limit is 5
+
+    // Find the driver to get the owner
+    const driver = await Driver.findById(driverId).select("Owner");
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+
+    // Find the verified vehicles associated with the owner
+    const vehicles = await Vehicle.find({
+      Owner: driver.Owner,
+      isVerified: "true",
+    })
+      .select("vehicleNum name Type")
+      .limit(limit);
+
+    return res.status(200).json({
+      success: true,
+      count: vehicles.length,
+      data: vehicles,
+    });
+  } catch (error) {
+    console.error("Error fetching driver vehicles:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get trip history for a driver
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+module.exports.getDriverTripHistory = async (req, res) => {
+  try {
+    const driverId = req.params.driverId;
+    const limit = parseInt(req.query.limit) || 5; // Default limit is 5
+
+    // Check if driver exists (without auto-populating)
+    const driverExists = await Driver.exists({ _id: driverId });
+
+    if (!driverExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+
+    // To avoid the autopopulate behavior, use a different approach
+    const trips = await Trip.find({
+      Driver: driverId,
+      isFinished: true, // Only include completed trips
+    })
+      .populate({
+        path: "Driver",
+        select: "_id", // We need to select at least one field to make populate work
+      })
+      .select(
+        "_id Start End start_time end_time isPublic Type Vehicle viaRoute"
+      )
+      .sort({ _id: -1 }) // Sort by _id in descending order (assuming ObjectId has timestamp)
+      .limit(limit)
+      .lean(); // Use lean() for better performance and to get plain objects
+
+    // Remove the Driver field from the response
+    const tripsWithoutDriver = trips.map((trip) => {
+      const { Driver, ...tripWithoutDriver } = trip;
+      return tripWithoutDriver;
+    });
+
+    // Calculate trip duration for each trip
+    const tripsWithDuration = tripsWithoutDriver.map((trip) => {
+      // Since we're already using lean(), the trip is already a plain object
+      const tripData = { ...trip };
+
+      // Calculate duration if both start and end times are available
+      if (trip.start_time && trip.end_time) {
+        const duration = calculateTripDuration(trip.start_time, trip.end_time);
+        tripData.duration = duration;
+      }
+
+      return tripData;
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: tripsWithDuration.length,
+      data: tripsWithDuration,
+    });
+  } catch (error) {
+    console.error("Error fetching driver trip history:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Calculate the duration between two time strings
+ * @param {String} startTime - Start time string in format "HH:MM AM/PM"
+ * @param {String} endTime - End time string in format "HH:MM AM/PM"
+ * @returns {Object} Object containing hours, minutes and total minutes
+ */
+function calculateTripDuration(startTime, endTime) {
+  // Convert time strings to standardized 24-hour format
+  const start24 = convertTo24Hour(startTime);
+  const end24 = convertTo24Hour(endTime);
+
+  // Parse the time strings
+  const [startHours, startMinutes] = start24.split(":").map(Number);
+  const [endHours, endMinutes] = end24.split(":").map(Number);
+
+  // Calculate total minutes for both times
+  let startTotalMinutes = startHours * 60 + startMinutes;
+  let endTotalMinutes = endHours * 60 + endMinutes;
+
+  // Handle overnight trips
+  if (endTotalMinutes < startTotalMinutes) {
+    endTotalMinutes += 24 * 60; // Add 24 hours
+  }
+
+  // Calculate difference in minutes
+  const diffMinutes = endTotalMinutes - startTotalMinutes;
+
+  // Calculate hours and remaining minutes
+  const hours = Math.floor(diffMinutes / 60);
+  const minutes = diffMinutes % 60;
+
+  return {
+    hours,
+    minutes,
+    totalMinutes: diffMinutes,
+  };
+}
+
+/**
+ * Convert 12-hour time format to 24-hour format
+ * @param {String} timeString - Time string in format "HH:MM AM/PM"
+ * @returns {String} 24-hour format time string "HH:MM"
+ */
+function convertTo24Hour(timeString) {
+  const [timePart, ampm] = timeString.split(" ");
+  let [hours, minutes] = timePart.split(":").map(Number);
+
+  if (ampm === "PM" && hours < 12) {
+    hours += 12;
+  } else if (ampm === "AM" && hours === 12) {
+    hours = 0;
+  }
+
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}`;
+}

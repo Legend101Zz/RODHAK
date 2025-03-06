@@ -44,5 +44,7 @@ router.route("/registerAPI").post(
   ]),
   drivers.DriverRegisterAPI
 );
+router.route("/vehicles/:driverId").get(drivers.getDriverVerifiedVehicles);
+router.route("/trips/history/:driverId").get(drivers.getDriverTripHistory);
 
 module.exports = router;
