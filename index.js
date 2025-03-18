@@ -29,8 +29,12 @@ app.set("views", path.join(__dirname, "views"));
 const corsOptions = {
   origin:
     process.env.NODE_ENV === "production"
-      ? "https://your-production-domain.com" // Replace with your production domain
-      : ["http://localhost:5001", "http://localhost:3000"], // Add all your development domains
+      ? "https://owner-dnd-rodhak.onrender.com"
+      : [
+          "http://localhost:5001",
+          "http://localhost:3000",
+          "https://owner-dnd-rodhak.onrender.com",
+        ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true, // This is important for cookies/credentials
