@@ -17,6 +17,7 @@ router.get("/trip/Coords/:id", apis.getTripCoordsData);
 // Protected routes (auth required)
 router.post("/change-password", auth, apis.changePassword);
 router.get("/owner/:id", auth, apis.ownerData);
+router.get("/driver/:id", auth, apis.getDriverDetails);
 router.get("/attendance/:ownerId", auth, apis.getOwnerDriversAttendance);
 
 // If you still need these legacy routes

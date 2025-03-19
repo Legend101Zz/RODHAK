@@ -503,3 +503,50 @@ module.exports.getOwnerDriversAttendance = async (req, res) => {
     });
   }
 };
+
+// Get driver details by ID
+module.exports.getDriverDetails = async (req, res) => {
+  try {
+    const driverId = req.params.id;
+
+    // Find driver by ID and exclude password
+    const driver = await Driver.findById(driverId).select("-password").lean();
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+
+    // Check if the requesting owner owns this driver
+    if (req.owner && driver.Owner && !driver.Owner.equals(req.owner._id)) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to access this driver's details",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        _id: driver._id,
+        username: driver.username,
+        name: driver.name,
+        email: driver.email,
+        phone: driver.phone,
+        age: driver.age,
+        images: driver.images,
+        legal: driver.legal,
+        isVerified: driver.isVerified,
+      },
+    });
+  } catch (error) {
+    console.error("Get driver details error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching driver details",
+      error: error.message,
+    });
+  }
+};
