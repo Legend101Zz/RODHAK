@@ -15,8 +15,12 @@ router
       { name: "image", maxCount: 2 },
       { name: "legal", maxCount: 8 },
     ]),
-    owners.register,
+    owners.register
   );
+
+router.get("/registration-error", (req, res) => {
+  res.render("users/registration-error", req.query);
+});
 
 // Email verification
 router.get("/verify-email/:token", owners.verifyEmail);

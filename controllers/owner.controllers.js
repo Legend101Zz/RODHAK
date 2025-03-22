@@ -37,30 +37,50 @@ module.exports.renderRegister = (req, res) => {
 // Handle registration
 module.exports.register = async (req, res, next) => {
   try {
+    // Check if user already exists
     const user = await Owner.findOne({ email: req.body.email });
     if (user) {
-      return res.status(409).send({
-        message: "Owner with the given email already exists",
+      return renderErrorPage(res, {
+        errorType: 'duplicate',
+        errorTitle: 'Email Already Registered',
+        errorMessage: 'An account with this email address already exists in our system.',
+        errorDetails: `Duplicate key: ${req.body.email}`,
+        helpSteps: [
+          'Try logging in with this email instead of registering',
+          'Use a different email address if you need to create a new account',
+          'Use the "Forgot Password" feature if you cannot remember your password'
+        ]
       });
     }
 
+    // Process form data
     const { email, username, password, phone, business } = req.body;
     const obj = Object.assign({}, req.files);
 
     // Process image files
     const imagesObj = obj.image;
     const legalObj = obj.legal;
+    
+    if (!imagesObj || !legalObj) {
+      return renderErrorPage(res, {
+        errorType: 'validation',
+        errorTitle: 'Missing Required Documents',
+        errorMessage: 'Please upload both your ID proof and profile image.',
+        errorDetails: null,
+        helpSteps: [
+          'Ensure you have uploaded a valid ID proof document',
+          'Ensure you have uploaded a profile image',
+          'Make sure each file is under 5MB in size'
+        ]
+      });
+    }
+
     const imagesUrl = imagesObj[0].path;
     const imagesPath = imagesObj[0].filename;
     const legalUrl = legalObj[0].path;
     const legalPath = legalObj[0].filename;
     const imagesArr = [{ url: imagesUrl, filename: imagesPath }];
     const legalArr = [{ url: legalUrl, filename: legalPath }];
-
-    // Generate verification token
-    const verificationToken = generateVerificationToken();
-    const tokenExpiry = new Date();
-    tokenExpiry.setHours(tokenExpiry.getHours() + 24); // Token expires in 24 hours
 
     // Hash password
     const salt = await bcrypt.genSalt(Number(10));
@@ -73,37 +93,128 @@ module.exports.register = async (req, res, next) => {
       phone,
       business,
       password: hashPassword,
-      emailVerificationToken: verificationToken,
-      emailVerificationTokenExpires: tokenExpiry,
-      emailVerified: false,
-      isVerified: "false",
       images: imagesArr,
-      legal: legalArr,
+      legal: legalArr
     });
 
     // Save owner to database
     await owner.save();
 
-    // Send verification email
-    const emailSent = await sendVerificationEmail(owner, verificationToken);
+    // Email sending logic
+    const mailOptions = {
+      from: process.env.GMAIL_MAIL,
+      to: email,
+      subject: "Welcome to Rodhak.",
+      html: `
+        Dear ${username}, Thank you for registering your business ${business} with us \n .Your credentials are :- email:- <b> ${email}</b> , password is :- <b> ${password}</b>. Please use this to login again after we get your details verified.`,
+    };
 
-    if (!emailSent) {
-      return res.status(500).json({
-        type: "failure",
-        message: "Failed to send verification email",
+    transporter.sendMail(mailOptions)
+      .then(() => {
+        // email sent and verification saved
+        res.render("users/wait");
+      })
+      .catch((err) => {
+        console.log("Email error:", err);
+        // Still proceed even if email fails
+        res.render("users/wait");
       });
-    }
-
-    // Render verification pending page
-    res.render("users/verify-email", { email: owner.email });
   } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({
-      type: "failure",
-      message: "Server error during registration",
-    });
+    handleRegistrationError(error, req, res);
   }
 };
+
+// Function to handle various registration errors
+function handleRegistrationError(error, req, res) {
+  console.error("Registration error:", error);
+  
+  // Duplicate key error (E11000)
+  if (error.code === 11000) {
+    const field = Object.keys(error.keyPattern)[0];
+    const value = error.keyValue[field];
+    
+    let errorTitle, errorMessage;
+    
+    switch(field) {
+      case 'email':
+        errorTitle = 'Email Already Registered';
+        errorMessage = 'An account with this email address already exists in our system.';
+        break;
+      case 'phone':
+        errorTitle = 'Phone Number Already Registered';
+        errorMessage = 'This phone number is already associated with an account.';
+        break;
+      case 'username':
+        errorTitle = 'Username Already Taken';
+        errorMessage = 'This username is already taken. Please choose a different one.';
+        break;
+      default:
+        errorTitle = 'Duplicate Information Detected';
+        errorMessage = `The ${field} you provided is already registered in our system.`;
+    }
+    
+    return renderErrorPage(res, {
+      errorType: 'duplicate',
+      errorTitle,
+      errorMessage,
+      errorDetails: `Duplicate key: ${value}`,
+      helpSteps: [
+        'Try using different information for registration',
+        'If you already have an account, please login instead',
+        'Contact support if you believe this is an error'
+      ]
+    });
+  }
+  
+  // ObjectId casting error
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
+    return renderErrorPage(res, {
+      errorType: 'objectId',
+      errorTitle: 'Invalid Reference ID',
+      errorMessage: 'The system encountered an invalid ID reference.',
+      errorDetails: `Invalid ${error.path}: ${error.value}`,
+      helpSteps: [
+        'Refresh the page and try again',
+        'Clear your browser cache and cookies',
+        'Try registering from a different browser'
+      ]
+    });
+  }
+  
+  // Validation error
+  if (error.name === 'ValidationError') {
+    const fields = Object.keys(error.errors).join(', ');
+    return renderErrorPage(res, {
+      errorType: 'validation',
+      errorTitle: 'Validation Error',
+      errorMessage: 'Some of the information you provided did not meet our requirements.',
+      errorDetails: `Invalid fields: ${fields}`,
+      helpSteps: [
+        'Check all required fields are filled correctly',
+        'Ensure your password meets the security requirements',
+        'Make sure all uploaded files are in the correct format'
+      ]
+    });
+  }
+  
+  // Default error handling
+  return renderErrorPage(res, {
+    errorType: 'general',
+    errorTitle: 'Registration Failed',
+    errorMessage: 'We encountered an unexpected error while processing your registration.',
+    errorDetails: error.message,
+    helpSteps: [
+      'Try again in a few minutes',
+      'Check your internet connection',
+      'Contact our support team if the problem persists'
+    ]
+  });
+}
+
+// Function to render the error page with appropriate content
+function renderErrorPage(res, errorData) {
+  return res.render("users/registration-error", errorData);
+}
 
 // Handle email verification
 module.exports.verifyEmail = async (req, res) => {
