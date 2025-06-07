@@ -81,6 +81,20 @@ app.use("/api/v1/vehicle", vehicleRoutes);
 //API_ROUTES
 app.use("/himraahi/", apiRoutes);
 
+// UTILS
+
+function getRandomHimachalCoordinates() {
+  const minLat = 30.3;
+  const maxLat = 33.3;
+  const minLng = 75.5;
+  const maxLng = 79.0;
+
+  const latitude = minLat + Math.random() * (maxLat - minLat);
+  const longitude = minLng + Math.random() * (maxLng - minLng);
+
+  return { latitude, longitude };
+}
+
 //ROUTE TO HANDLE RANDOM URLS
 
 app.all("*", (req, res, next) => {
@@ -97,16 +111,17 @@ mongoose
     const io = socketio(server, { cors: { origin: "*" } });
 
     io.on("connection", (socket) => {
-      console.log("client connected ");
+      // console.log("client connected ");
       // ========= CODE TO CHECK //////////
       // let data;
       // let data2;
       // setInterval(() => {
-      //   const latitude = parseFloat(faker.address.latitude());
-      //   const longitude = parseFloat(faker.address.longitude());
+      //   const coords = getRandomHimachalCoordinates();
+      //   const latitude = coords.latitude;
+      //   const longitude = coords.longitude;
 
       //   data = {
-      //     tripID: "677ad2da5251c28ae04ec8b2",
+      //     tripID: "677ad2da5251c28ae04ec8b1",
       //     latitude: latitude,
       //     longitude: longitude,
       //     sourceLocation: "Mandi,HP",
@@ -138,8 +153,15 @@ mongoose
       //     viaLocation: "Via",
       //     currentTime: new Date().toLocaleTimeString(),
       //   };
-      //   console.log("veh 2 ", data2.latitude);
-      //   if (data2) socket.broadcast.emit("broadcastDriverData", data2);
+      //   console.log("veh 2 ", data2.latitude, data2.longitude);
+      //   if (
+      //     data2 &&
+      //     data2.latitude >= -90 &&
+      //     data2.latitude <= 90 &&
+      //     data2.longitude >= -180 &&
+      //     data2.longitude <= 180
+      //   )
+      //     socket.broadcast.emit("broadcastDriverData", data2);
       // }, 20000);
 
       // ========= CODE TO CHECK ENDS //////////
